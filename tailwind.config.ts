@@ -10,7 +10,37 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Pretendard", "sans-serif"],
+      },
       colors: {
+        primary: {
+          50: "#F0F4FF",
+          100: "#E0E9FF",
+          200: "#C7D8FF",
+          300: "#A4BCFF",
+          400: "#819CFF",
+          500: "#1F2C5C",
+          600: "#1A2549",
+          700: "#151E36",
+          800: "#101623",
+          900: "#0C0E17",
+          DEFAULT: "#1F2C5C",
+          foreground: "#FFFFFF",
+        },
+        stone: {
+          50: "#FAFAF9",
+          100: "#F5F5F4",
+          200: "#E7E5E4",
+          300: "#D6D3D1",
+          400: "#A8A29E",
+          500: "#78716C",
+          600: "#57534E",
+          700: "#44403C",
+          800: "#292524",
+          900: "#1C1917",
+          950: "#0C0A09",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -20,10 +50,6 @@ export default {
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -51,6 +77,7 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        contents: "#E7E5E4",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -59,5 +86,6 @@ export default {
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
