@@ -41,6 +41,10 @@ async function getData(id: string) {
   return items.find((item) => item.id === id) || items[2];
 }
 
+export async function generateStaticParams() {
+  return [{ id: "1" }, { id: "2" }, { id: "default" }];
+}
+
 interface EditDataPageProps {
   params: Promise<{ id: string }>;
 }

@@ -30,6 +30,10 @@ async function getLog(id: string) {
   return logs.find((log) => log.id === id) || logs[logs.length - 1]; // Just return something for demo
 }
 
+export async function generateStaticParams() {
+  return [{ id: "1" }, { id: "default" }];
+}
+
 interface LogDetailPageProps {
   params: Promise<{ id: string }>;
 }
