@@ -1,4 +1,5 @@
 import Sidebar from "@/components/layout/Sidebar/Sidebar";
+import { Suspense } from "react";
 
 export default function DashboardLayout({
   children,
@@ -13,7 +14,9 @@ export default function DashboardLayout({
       {/* 우측 콘텐츠 영역 */}
       <main className="flex-1 p-8">
         <div className="bg-white rounded-lg shadow-sm border border-contents">
-          {children}
+          <Suspense fallback={<div className="p-8 text-gray-500">Loading...</div>}>
+            {children}
+          </Suspense>
         </div>
       </main>
     </div>

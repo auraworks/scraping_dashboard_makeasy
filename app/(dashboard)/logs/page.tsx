@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -18,8 +20,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 export default function LogsPage() {
+  const router = useRouter();
+
   const logs = [
     {
       id: 1,
@@ -147,25 +152,26 @@ export default function LogsPage() {
               {logs.map((log) => (
                 <tr
                   key={log.id}
-                  className="group hover:bg-gray-50/50 transition-colors"
+                  onClick={() => router.push(`/logs/${log.id}`)}
+                  className="group hover:bg-gray-50/80 transition-all cursor-pointer"
                 >
                   <td className="px-6 py-5 whitespace-nowrap">
                     <Badge
                       className={`font-bold px-2.5 py-0.5 rounded-lg shadow-none border ${
-                        log.level === "INFO"
-                          ? "bg-blue-50 text-blue-600 border-blue-100"
+                        log.level === "ERROR"
+                          ? "bg-primary-900 text-white border-primary-900"
                           : log.level === "WARN"
-                          ? "bg-amber-50 text-amber-600 border-amber-100"
-                          : log.level === "ERROR"
-                          ? "bg-red-50 text-red-600 border-red-100"
-                          : "bg-gray-50 text-gray-600 border-gray-100"
+                          ? "bg-primary-100 text-primary-700 border-primary-200"
+                          : log.level === "INFO"
+                          ? "bg-primary-50 text-primary-600 border-primary-100"
+                          : "bg-gray-50 text-gray-400 border-gray-200"
                       }`}
                     >
                       {log.level}
                     </Badge>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="max-w-md truncate text-sm font-medium text-gray-900">
+                    <div className="max-w-md truncate text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
                       {log.message}
                     </div>
                   </td>

@@ -174,15 +174,15 @@ export default function WeeklyIssuesPage() {
                     <Badge
                       className={`font-bold px-3 py-1 rounded-xl shadow-none border ${
                         report.status === "발행완료"
-                          ? "bg-indigo-50 text-indigo-600 border-indigo-100"
+                          ? "bg-primary-500 text-white border-primary-500"
                           : report.status === "수정중"
-                          ? "bg-amber-50 text-amber-600 border-amber-100"
+                          ? "bg-primary-50 text-primary-700 border-primary-100"
                           : "bg-gray-50 text-gray-500 border-gray-100"
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        report.status === "발행완료" ? "bg-indigo-500" 
-                        : report.status === "수정중" ? "bg-amber-500 animate-pulse"
+                        report.status === "발행완료" ? "bg-primary-200" 
+                        : report.status === "수정중" ? "bg-primary-500 animate-pulse"
                         : "bg-gray-400"
                       }`} />
                       {report.status}

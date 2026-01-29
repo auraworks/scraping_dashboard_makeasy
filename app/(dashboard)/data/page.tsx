@@ -1,5 +1,7 @@
+"use client";
+
 import React from "react";
-import { Search, Filter, MoreHorizontal } from "lucide-react";
+import { Search, Filter, MoreHorizontal, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -18,8 +20,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function DataPage() {
+  const router = useRouter();
+
   const dataItems = [
     {
       id: 1,
@@ -79,9 +85,13 @@ export default function DataPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition-all shadow-sm shadow-primary-200">
-            데이터 내보내기
-          </button>
+          <Button 
+            onClick={() => router.push("/data/new")}
+            className="px-5 py-6 bg-primary-500 text-white rounded-xl text-base font-bold hover:bg-primary-600 transition-all shadow-lg shadow-primary-200"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            새 데이터 등록
+          </Button>
         </div>
       </div>
 
@@ -155,11 +165,12 @@ export default function DataPage() {
               {dataItems.map((item) => (
                 <tr
                   key={item.id}
-                  className="group hover:bg-gray-50/50 transition-colors"
+                  onClick={() => router.push(`/data/${item.id}`)}
+                  className="group hover:bg-gray-50/80 transition-all cursor-pointer"
                 >
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="max-w-xs truncate text-sm font-bold text-gray-900 leading-tight">
+                      <div className="max-w-xs truncate text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">
                         {item.title}
                       </div>
                     </div>
@@ -181,19 +192,19 @@ export default function DataPage() {
                     <Badge
                       className={`font-bold px-3 py-1 rounded-xl shadow-none border ${
                         item.status === "처리완료"
-                          ? "bg-blue-50 text-blue-600 border-blue-100"
+                          ? "bg-primary-500 text-white border-primary-500"
                           : item.status === "처리중"
-                          ? "bg-amber-50 text-amber-600 border-amber-100"
+                          ? "bg-primary-50 text-primary-700 border-primary-100"
                           : item.status === "대기"
                           ? "bg-gray-50 text-gray-500 border-gray-100"
-                          : "bg-red-50 text-red-600 border-red-100"
+                          : "bg-primary-900 text-white border-primary-900"
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        item.status === "처리중" ? "bg-amber-500 animate-pulse" 
-                        : item.status === "처리완료" ? "bg-blue-500"
+                        item.status === "처리중" ? "bg-primary-400 animate-pulse" 
+                        : item.status === "처리완료" ? "bg-primary-200"
                         : item.status === "대기" ? "bg-gray-400"
-                        : "bg-red-500"
+                        : "bg-primary-400"
                       }`} />
                       {item.status}
                     </Badge>

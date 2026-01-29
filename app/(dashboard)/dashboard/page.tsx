@@ -1,270 +1,430 @@
+"use client";
+
 import React from "react";
-import { Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { 
+  TrendingUp, 
+  CheckSquare, 
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Database,
+  FileText,
+  Activity,
+  Server
+} from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Badge } from "@/components/ui/badge";
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  Filler,
+} from "chart.js";
+import { Line, Bar, Doughnut } from "react-chartjs-2";
+
+// Chart.js 등록
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  Filler
+);
 
 export default function Dashboard() {
-  const authors = [
+  // KPI 데이터
+  const stats = [
+    {
+      title: "총 수집 문서",
+      subtitle: "전체 소스 누적 데이터",
+      value: "1,284,392",
+      icon: <Database className="w-5 h-5 text-primary-500" />,
+      footer: "전일 대비 +1.2%",
+      footerColor: "text-emerald-600",
+      chartData: [65, 75, 70, 80, 85, 90, 95]
+    },
+    {
+      title: "금일 신규 수집",
+      subtitle: "실시간 수집 현황",
+      value: "14,205",
+      icon: <Server className="w-5 h-5 text-blue-500" />,
+      footer: "지난 시간 대비 +320건",
+      footerColor: "text-blue-600",
+      chartData: [20, 40, 30, 50, 40, 60, 80]
+    },
+    
+    {
+      title: "금주 선정 이슈",
+      subtitle: "주간 리포트 후보",
+      value: "21",
+      icon: <Activity className="w-5 h-5 text-orange-500" />,
+      footer: "이번 주 목표 달성 85%",
+      footerColor: "text-orange-600",
+      chartData: [5, 8, 12, 15, 20, 25, 30]
+    }
+  ];
+
+  // 최근 선정된 뉴스 데이터
+  const recentIssues = [
     {
       id: 1,
-      name: "김철수",
-      email: "kim@mail.com",
-      function: "관리자",
-      department: "조직",
-      status: "온라인",
-      employed: "23/04/18",
-      avatar: "👨‍💼",
+      source: "네이버 뉴스",
+      icon: "📰",
+      title: "AI 기술 발전과 일자리 변화 보고서",
+      category: "IT/과학",
+      importance: "상",
+      status: "분석완료",
+      progress: 100
     },
     {
       id: 2,
-      name: "이영희",
-      email: "lee@mail.com",
-      function: "개발자",
-      department: "개발팀",
-      status: "오프라인",
-      employed: "11/01/19",
-      avatar: "👩‍💻",
+      source: "블라인드",
+      icon: "💬",
+      title: "2024년 상반기 채용 트렌드 분석",
+      category: "사회/노동",
+      importance: "중",
+      status: "검토중",
+      progress: 60
     },
     {
       id: 3,
-      name: "박준호",
-      email: "park@mail.com",
-      function: "임원",
-      department: "프로젝트",
-      status: "오프라인",
-      employed: "19/09/17",
-      avatar: "👨‍💼",
+      source: "다음 뉴스",
+      icon: "📰",
+      title: "글로벌 경제 위기 대응 전략",
+      category: "경제",
+      importance: "상",
+      status: "선별완료",
+      progress: 85
     },
     {
       id: 4,
-      name: "정미영",
-      email: "jung@mail.com",
-      function: "개발자",
-      department: "개발팀",
-      status: "온라인",
-      employed: "24/12/08",
-      avatar: "👩‍💻",
+      source: "인스타그램",
+      icon: "📱",
+      title: "MZ세대 소비 패턴 변화 (해시태그 분석)",
+      category: "라이프스타일",
+      importance: "중",
+      status: "수집중",
+      progress: 45
     },
     {
       id: 5,
-      name: "최동욱",
-      email: "choi@mail.com",
-      function: "관리자",
-      department: "임원진",
-      status: "오프라인",
-      employed: "04/10/21",
-      avatar: "👨‍💼",
-    },
-    {
-      id: 6,
-      name: "한소연",
-      email: "han@mail.com",
-      function: "개발자",
-      department: "개발팀",
-      status: "오프라인",
-      employed: "14/09/20",
-      avatar: "👩‍💻",
-    },
+      source: "트위터(X)",
+      icon: "🐦",
+      title: "신규 스마트폰 출시 반응 모니터링",
+      category: "IT/테크",
+      importance: "하",
+      status: "대기",
+      progress: 10
+    }
   ];
 
+  // 차트 옵션 공통
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 } }
+      },
+      y: {
+        grid: { color: "#f3f4f6" },
+        ticks: { display: false }
+      }
+    }
+  };
+
+  // 1. 수집 트래픽 차트 (Line)
+  const trafficChartData = {
+    labels: ["00시", "04시", "08시", "12시", "16시", "20시", "24시"],
+    datasets: [
+      {
+        label: "수집 문서 수",
+        data: [1200, 1900, 3000, 5000, 4200, 6000, 3500],
+        borderColor: "#1F2C5C",
+        backgroundColor: "rgba(31, 44, 92, 0.05)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: "#1F2C5C",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+      },
+    ],
+  };
+
+  // 2. 카테고리별 분류 현황 (Bar)
+  const categoryChartData = {
+    labels: ["경제", "정치", "사회", "IT/과학", "라이프", "연예"],
+    datasets: [
+      {
+        label: "문서 수",
+        data: [4500, 3200, 2800, 5100, 2400, 1800],
+        backgroundColor: [
+          "#1F2C5C", // Darkest
+          "#2A3C72",
+          "#364D89",
+          "#425FA2",
+          "#5373BD",
+          "#6B8AD9", // Lightest
+        ],
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  // 3. 소스별 점유율 (Doughnut)
+  const sourceChartData = {
+    labels: ["네이버", "다음", "커뮤니티", "SNS", "기타"],
+    datasets: [
+      {
+        data: [45, 25, 15, 10, 5],
+        backgroundColor: [
+          "#1F2C5C", // Primary
+          "#324682", 
+          "#4C63A6",
+          "#6E84C7", 
+          "#E2E8F0", // Light Gray for 'Others'
+        ],
+        borderWidth: 0,
+      },
+    ],
+  };
+
   return (
-    <div className="p-8 w-full">
-      {/* 헤더 섹션 */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">대시보드</h1>
-          <p className="text-gray-500 text-lg">
-            사용자 데이터 수집 현황 및 관리자 목록을 한눈에 확인하세요.
-          </p>
+    <div className="min-h-screen ">
+      {/* Hero Section */}
+      <div className="bg-primary-500 text-white rounded-3xl p-8 md:p-10 mb-8 mx-6 mt-6 relative overflow-hidden shadow-lg shadow-primary-900/20">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+          <div className="flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
+              통합 데이터 수집 대시보드
+            </h1>
+            <p className="text-primary-100 text-lg mb-6 max-w-xl leading-relaxed">
+              다양한 채널에서 실시간으로 데이터를 수집하고, AI 분석을 통해 가치 있는 이슈를 발굴하세요.
+              현재 <strong>5개 채널</strong>이 정상 작동 중입니다.
+            </p>
+            <div className="flex gap-3">
+              <button className="bg-white text-primary-600 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-md">
+                리포트 생성하기
+              </button>
+              <button className="bg-primary-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-700 transition-all border border-primary-400">
+                수집 설정 관리
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          
-          <button className="px-4 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition-all shadow-sm shadow-primary-200">
-            새 사용자 추가
-          </button>
-        </div>
+        
+        {/* Background Gradients */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-30"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
       </div>
 
-      {/* 저자 테이블 컨테이너 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ring-1 ring-black/5">
-        {/* 검색 및 필터 바 */}
-        <div className="p-5 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gray-50/50">
-          <div className="relative w-full lg:w-96">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-              <Search className="h-4 w-4 text-gray-400" />
+      <div className="px-6 pb-8">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 ">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 mb-1">{stat.title}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{stat.subtitle}</p>
+                </div>
+              </div>
+              
+              {/* Mini Sparkline using HTML/CSS only for simplicity in small cards */}
+              <div className="flex items-end gap-1 h-16 mb-4">
+                {stat.chartData.map((val, i) => (
+                  <div 
+                    key={i} 
+                    className="flex-1 bg-primary-500 rounded-t-sm opacity-80 hover:opacity-100 transition-opacity"
+                    style={{ height: `${val}%` }}
+                  ></div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-3 border-t border-gray-50">
+                <TrendingUp className="w-3 h-3 text-primary-500" />
+                <p className={`text-xs font-semibold ${stat.footerColor}`}>{stat.footer}</p>
+              </div>
             </div>
-            <Input
-              placeholder="이름 또는 이메일로 검색"
-              className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus-visible:ring-1 focus-visible:ring-primary-500 focus-visible:border-primary-500 transition-all shadow-sm"
-            />
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <Select>
-              <SelectTrigger className="w-[140px] h-11 bg-white border-gray-200 rounded-xl shadow-sm focus:ring-primary-500/20">
-                <SelectValue placeholder="모든 직책" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 직책</SelectItem>
-                <SelectItem value="admin">관리자</SelectItem>
-                <SelectItem value="dev">개발자</SelectItem>
-                <SelectItem value="exec">임원</SelectItem>
-              </SelectContent>
-            </Select>
+          ))}
+        </div>
 
-            <Select>
-              <SelectTrigger className="w-[140px] h-11 bg-white border-gray-200 rounded-xl shadow-sm focus:ring-primary-500/20">
-                <SelectValue placeholder="모든 상태" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 상태</SelectItem>
-                <SelectItem value="online">온라인</SelectItem>
-                <SelectItem value="offline">오프라인</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+          {/* Main Traffic Chart */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">실시간 수집 트래픽</h3>
+                <p className="text-xs text-gray-500 mt-1">시간대별 문서 수집 추이</p>
+              </div>
+              <select className="text-xs border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-600 focus:ring-primary-500 focus:border-primary-500">
+                <option>오늘</option>
+                <option>어제</option>
+                <option>지난 7일</option>
+              </select>
+            </div>
+            <div className="h-64">
+              <Line data={trafficChartData} options={commonOptions} />
+            </div>
+          </div>
+
+          {/* Category Analysis Chart */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">주요 키워드 카테고리</h3>
+                <p className="text-xs text-gray-500 mt-1">AI 자동 분류 기준 통계</p>
+              </div>
+              <button className="text-xs font-semibold text-primary-600 hover:text-primary-700">전체보기</button>
+            </div>
+            <div className="h-64">
+              <Bar data={categoryChartData} options={commonOptions} />
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50/30 border-b border-gray-100">
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  사용자 정보
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  직책 및 팀
-                </th>
-                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  현재 상태
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  합류일
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  관리
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-50">
-              {authors.map((author) => (
-                <tr
-                  key={author.id}
-                  className="group hover:bg-gray-50/50 transition-colors"
-                >
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex items-center gap-4">
-                      
-                      <div>
-                        <div className="text-sm font-bold text-gray-900 leading-tight">
-                          {author.name}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-0.5 font-medium">
-                          {author.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-800">
-                      {author.function}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-0.5 font-medium">
-                      {author.department}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-center">
-                    <Badge
-                      className={`font-bold px-3 py-1 rounded-xl shadow-none border ${
-                        author.status === "온라인"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          : "bg-gray-50 text-gray-500 border-gray-100"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        author.status === "온라인" ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
-                      }`} />
-                      {author.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-600 font-bold">
-                    {author.employed}
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right">
-                    <button className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+            {/* Source Distribution Chart */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 xl:col-span-1">
+            <div className="flex flex-col h-full items-center justify-center">
+              <div className="text-center mb-8">
+                <h3 className="text-lg font-bold text-gray-900">데이터 소스 점유율</h3>
+                <p className="text-xs text-gray-500 mt-1">채널별 수집 비중</p>
+              </div>
+              <div className="w-full h-80 flex items-center justify-center">
+                <Doughnut data={sourceChartData} options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { 
+                      position: 'bottom', 
+                      labels: { 
+                        usePointStyle: true, 
+                        boxWidth: 8, 
+                        padding: 20, 
+                        font: { size: 11 } 
+                      } 
+                    }
+                  }
+                }} />
+              </div>
+            </div>
+          </div>
 
-        {/* 페이지네이션 섹션 */}
-        <div className="px-6 py-4 border-t border-gray-100 flex flex-row items-center justify-end gap-4 bg-gray-50/20">
-          
-          
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent className="gap-2">
-              <PaginationItem>
-                <PaginationPrevious 
-                  href="#" 
-                  className="rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all" 
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink 
-                  href="#" 
-                  isActive 
-                  className="w-10 h-10 rounded-xl bg-primary-500 text-white border-none font-bold shadow-md shadow-primary-200 hover:bg-primary-600 transition-all"
-                >
-                  1
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink 
-                  href="#" 
-                  className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
-                >
-                  2
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink 
-                  href="#" 
-                  className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
-                >
-                  3
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext 
-                  href="#" 
-                  className="rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all" 
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          {/* Recent Issues Table */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 xl:col-span-2">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">최근 선정된 주요 이슈</h2>
+                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  실시간 업데이트 중
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-1.5">
+                  <Filter className="w-3.5 h-3.5" />
+                  필터
+                </button>
+                <button className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-semibold hover:bg-gray-800 transition-all">
+                  이슈 수동 등록
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50/50">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">출처</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">이슈 제목</th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">중요도</th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">상태</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">진척도</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentIssues.map((issue) => (
+                    <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
+                      <td className="py-4 px-4">
+                        <span className="text-sm font-semibold text-gray-700">{issue.source}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                            {issue.title}
+                          </span>
+                          <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
+                          issue.importance === "상" ? "bg-primary-900 text-white" :
+                          issue.importance === "중" ? "bg-primary-500/10 text-primary-600 border border-primary-200" :
+                          "bg-gray-50 text-gray-400 border border-gray-200"
+                        }`}>
+                          {issue.importance}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
+                          issue.status === "선별완료" ? "bg-primary-500 text-white" :
+                          issue.status === "수집중" ? "bg-primary-50 text-primary-700 border border-primary-100" :
+                          "bg-gray-50 text-gray-400"
+                        }`}>
+                          {issue.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-gray-100 rounded-full h-1.5 w-24">
+                            <div 
+                              className="h-1.5 rounded-full bg-primary-500"
+                              style={{ width: `${issue.progress}%`, opacity: issue.progress === 100 ? 1 : 0.6 }}
+                            />
+                          </div>
+                          <span className="text-xs font-semibold text-gray-500">{issue.progress}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 mt-4">
+              <span className="text-xs text-gray-400">1-5 of 42 items</span>
+              <div className="flex gap-1">
+                <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-50">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500">
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

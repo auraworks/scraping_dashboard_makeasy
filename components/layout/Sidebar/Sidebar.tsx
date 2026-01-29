@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { IoLogOutOutline } from "react-icons/io5";
 import { useAuthStore } from "@/components/store/authStore";
 import { useToast } from "@/components/hooks/useToast";
+import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -51,17 +52,18 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-stone-50 min-h-screen flex flex-col">
+    <aside className="w-64 bg-stone-50 h-screen max-h-screen sticky top-0 flex flex-col ">
       {/* 헤더 */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">Makeasy</h1>
+      <div className="p-6 ">
+        {/* <h1 className="text-xl font-bold text-gray-900">Makeasy</h1> */}
+        <Image src="/logo_full.png" alt="Logo" width={200} height={50} />
       </div>
 
       {/* 메인 네비게이션 */}
       <nav className="p-4 flex-1">
         <ul className="space-y-1">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <li key={item.id}>
                 <Link

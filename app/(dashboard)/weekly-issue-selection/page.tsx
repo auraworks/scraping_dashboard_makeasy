@@ -171,13 +171,12 @@ export default function WeeklyIssueSelectionPage() {
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap text-center">
                     <Badge
-                      variant="outline"
-                      className={`font-medium ${
+                      className={`font-medium shadow-none border ${
                         issue.importance === "상"
-                          ? "text-red-600 bg-red-50 border-red-100"
+                          ? "bg-primary-900 text-white border-primary-900"
                           : issue.importance === "중"
-                          ? "text-amber-600 bg-amber-50 border-amber-100"
-                          : "text-gray-600 bg-gray-50 border-gray-100"
+                          ? "bg-primary-100 text-primary-700 border-primary-200"
+                          : "bg-gray-50 text-gray-400 border-gray-100"
                       }`}
                     >
                       {issue.importance}
@@ -187,15 +186,15 @@ export default function WeeklyIssueSelectionPage() {
                     <Badge
                       className={`font-bold px-3 py-1 rounded-xl shadow-none border ${
                         issue.status === "선별완료"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          ? "bg-primary-500 text-white border-primary-500"
                           : issue.status === "검토중"
-                          ? "bg-blue-50 text-blue-600 border-blue-100"
+                          ? "bg-primary-50 text-primary-700 border-primary-100"
                           : "bg-gray-50 text-gray-500 border-gray-100"
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        issue.status === "선별완료" ? "bg-emerald-500" 
-                        : issue.status === "검토중" ? "bg-blue-500 animate-pulse"
+                        issue.status === "선별완료" ? "bg-primary-200" 
+                        : issue.status === "검토중" ? "bg-primary-500 animate-pulse"
                         : "bg-gray-400"
                       }`} />
                       {issue.status}

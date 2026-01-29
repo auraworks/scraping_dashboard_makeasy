@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -18,8 +20,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SourcesPage() {
+  const router = useRouter();
   const sources = [
     {
       id: 1,
@@ -79,9 +84,11 @@ export default function SourcesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition-all shadow-sm shadow-primary-200">
-            새 소스 추가
-          </button>
+          <Link href="/sources/new">
+            <button className="px-4 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition-all shadow-sm shadow-primary-200">
+              새 소스 추가
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -154,7 +161,8 @@ export default function SourcesPage() {
               {sources.map((source) => (
                 <tr
                   key={source.id}
-                  className="group hover:bg-gray-50/50 transition-colors"
+                  onClick={() => router.push(`/sources/${source.id}`)}
+                  className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div>
@@ -180,16 +188,16 @@ export default function SourcesPage() {
                     <Badge
                       className={`font-bold px-3 py-1 rounded-xl shadow-none border ${
                         source.status === "수집중"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          ? "bg-primary-50 text-primary-700 border-primary-100"
                           : source.status === "대기"
                           ? "bg-gray-50 text-gray-500 border-gray-100"
-                          : "bg-red-50 text-red-600 border-red-100"
+                          : "bg-primary-900 text-white border-primary-900"
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        source.status === "수집중" ? "bg-emerald-500 animate-pulse" 
+                        source.status === "수집중" ? "bg-primary-500 animate-pulse" 
                         : source.status === "대기" ? "bg-gray-400"
-                        : "bg-red-500"
+                        : "bg-primary-300"
                       }`} />
                       {source.status}
                     </Badge>
@@ -197,7 +205,7 @@ export default function SourcesPage() {
                   <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-600 font-bold">
                     {source.last_collected}
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                  <td className="px-6 py-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                     <button className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
