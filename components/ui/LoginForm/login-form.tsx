@@ -19,10 +19,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-// 로그인 스키마
+// 로그인 스키마 (더미 - 모든 입력 허용)
 const loginSchema = z.object({
-  email: z.string().email("유효한 이메일을 입력해주세요"),
-  password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
+  email: z.string().min(1, "이메일을 입력해주세요"),
+  password: z.string().min(1, "비밀번호를 입력해주세요"),
   rememberMe: z.boolean().optional(),
 });
 
@@ -46,10 +46,9 @@ export function LoginForm() {
     setIsLoading(true);
     setAuthError(null);
     try {
-      // 실제 로그인 로직은 여기에 구현
-      // 현재는 간단히 페이지 이동만 수행
+      // 더미 로그인 - 아무 값이나 입력하면 성공
       await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-      router.push("/admin/programs/list");
+      router.push("/dashboard");
     } catch (error) {
       const errorMessage =
         error instanceof Error

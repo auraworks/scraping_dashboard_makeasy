@@ -16,24 +16,10 @@ export default function Sidebar() {
 
   const menuItems = [
     { id: "dashboard", label: "대시보드", href: "/dashboard" },
-    { id: "sources", label: "소스 관리", href: "/sources" },
+    { id: "sources", label: "정보원 관리", href: "/sources" },
     { id: "data", label: "데이터 관리", href: "/data" },
     { id: "logs", label: "로그 관리", href: "/logs" },
-    {
-      id: "weekly-issue-selection",
-      label: "주간이슈선별",
-      href: "/weekly-issue-selection",
-    },
-    {
-      id: "weekly-issues",
-      label: "주간 이슈 조회",
-      href: "/weekly-issues",
-    },
-    {
-      id: "issue-archive",
-      label: "이슈 아카이브",
-      href: "/issue-archive",
-    },
+    
   ];
 
   const authPages = [

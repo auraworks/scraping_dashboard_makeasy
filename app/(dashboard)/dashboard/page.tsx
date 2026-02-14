@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { 
-  TrendingUp, 
-  CheckSquare, 
+import {
+  TrendingUp,
+  CheckSquare,
   Filter,
   ChevronLeft,
   ChevronRight,
@@ -62,16 +62,8 @@ export default function Dashboard() {
       footerColor: "text-blue-600",
       chartData: [20, 40, 30, 50, 40, 60, 80]
     },
-    
-    {
-      title: "금주 선정 이슈",
-      subtitle: "주간 리포트 후보",
-      value: "21",
-      icon: <Activity className="w-5 h-5 text-orange-500" />,
-      footer: "이번 주 목표 달성 85%",
-      footerColor: "text-orange-600",
-      chartData: [5, 8, 12, 15, 20, 25, 30]
-    }
+
+
   ];
 
   // 최근 선정된 뉴스 데이터
@@ -196,9 +188,9 @@ export default function Dashboard() {
         data: [45, 25, 15, 10, 5],
         backgroundColor: [
           "#1F2C5C", // Primary
-          "#324682", 
+          "#324682",
           "#4C63A6",
-          "#6E84C7", 
+          "#6E84C7",
           "#E2E8F0", // Light Gray for 'Others'
         ],
         borderWidth: 0,
@@ -207,7 +199,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <div className="bg-primary-500 text-white rounded-3xl p-8 md:p-10 mb-8 mx-6 mt-6 relative overflow-hidden shadow-lg shadow-primary-900/20">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
@@ -220,24 +212,19 @@ export default function Dashboard() {
               현재 <strong>5개 채널</strong>이 정상 작동 중입니다.
             </p>
             <div className="flex gap-3">
-              <button className="bg-white text-primary-600 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-md">
-                리포트 생성하기
-              </button>
-              <button className="bg-primary-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-700 transition-all border border-primary-400">
-                수집 설정 관리
-              </button>
+
             </div>
           </div>
         </div>
-        
+
         {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-30"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
       </div>
 
       <div className="px-6 pb-8">
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 ">
+        {/* KPI Cards - 2 Cards Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {stats.map((stat, idx) => (
             <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
@@ -249,12 +236,12 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400 mt-1">{stat.subtitle}</p>
                 </div>
               </div>
-              
-              {/* Mini Sparkline using HTML/CSS only for simplicity in small cards */}
+
+              {/* Mini Sparkline */}
               <div className="flex items-end gap-1 h-16 mb-4">
                 {stat.chartData.map((val, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className="flex-1 bg-primary-500 rounded-t-sm opacity-80 hover:opacity-100 transition-opacity"
                     style={{ height: `${val}%` }}
                   ></div>
@@ -269,7 +256,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Charts Section */}
+        {/* Charts Section - 2 Graphs Side by Side */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
           {/* Main Traffic Chart */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -289,24 +276,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Category Analysis Chart */}
+          {/* Source Distribution Chart */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">주요 키워드 카테고리</h3>
-                <p className="text-xs text-gray-500 mt-1">AI 자동 분류 기준 통계</p>
-              </div>
-              <button className="text-xs font-semibold text-primary-600 hover:text-primary-700">전체보기</button>
-            </div>
-            <div className="h-64">
-              <Bar data={categoryChartData} options={commonOptions} />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-            {/* Source Distribution Chart */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 xl:col-span-1">
             <div className="flex flex-col h-full items-center justify-center">
               <div className="text-center mb-8">
                 <h3 className="text-lg font-bold text-gray-900">데이터 소스 점유율</h3>
@@ -317,112 +288,79 @@ export default function Dashboard() {
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
-                    legend: { 
-                      position: 'bottom', 
-                      labels: { 
-                        usePointStyle: true, 
-                        boxWidth: 8, 
-                        padding: 20, 
-                        font: { size: 11 } 
-                      } 
+                    legend: {
+                      position: 'bottom',
+                      labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        padding: 20,
+                        font: { size: 11 }
+                      }
                     }
                   }
                 }} />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Recent Issues Table */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 xl:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">최근 선정된 주요 이슈</h2>
-                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                  실시간 업데이트 중
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-1.5">
-                  <Filter className="w-3.5 h-3.5" />
-                  필터
-                </button>
-                <button className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-semibold hover:bg-gray-800 transition-all">
-                  이슈 수동 등록
-                </button>
-              </div>
+        {/* Table Section - Full Width */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">최근 수집된 주요 이슈</h2>
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                실시간 업데이트 중
+              </p>
             </div>
+            <div className="flex items-center gap-2">
+              
+            </div>
+          </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">출처</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">이슈 제목</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">중요도</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">상태</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">진척도</th>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">출처</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">이슈 제목</th>
+                  
+                  
+
+                </tr>
+              </thead>
+              <tbody>
+                {recentIssues.map((issue) => (
+                  <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
+                    <td className="py-4 px-4">
+                      <span className="text-sm font-semibold text-gray-700">{issue.source}</span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                          {issue.title}
+                        </span>
+                        <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
+                      </div>
+                    </td>
+                    
+                    
                   </tr>
-                </thead>
-                <tbody>
-                  {recentIssues.map((issue) => (
-                    <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
-                      <td className="py-4 px-4">
-                        <span className="text-sm font-semibold text-gray-700">{issue.source}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
-                            {issue.title}
-                          </span>
-                          <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
-                          issue.importance === "상" ? "bg-primary-900 text-white" :
-                          issue.importance === "중" ? "bg-primary-500/10 text-primary-600 border border-primary-200" :
-                          "bg-gray-50 text-gray-400 border border-gray-200"
-                        }`}>
-                          {issue.importance}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
-                          issue.status === "선별완료" ? "bg-primary-500 text-white" :
-                          issue.status === "수집중" ? "bg-primary-50 text-primary-700 border border-primary-100" :
-                          "bg-gray-50 text-gray-400"
-                        }`}>
-                          {issue.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 bg-gray-100 rounded-full h-1.5 w-24">
-                            <div 
-                              className="h-1.5 rounded-full bg-primary-500"
-                              style={{ width: `${issue.progress}%`, opacity: issue.progress === 100 ? 1 : 0.6 }}
-                            />
-                          </div>
-                          <span className="text-xs font-semibold text-gray-500">{issue.progress}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="flex items-center justify-end gap-3 mt-4">
-              <span className="text-xs text-gray-400">1-5 of 42 items</span>
-              <div className="flex gap-1">
-                <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-50">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500">
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 mt-4">
+            <span className="text-xs text-gray-400">1-5 of 42 items</span>
+            <div className="flex gap-1">
+              <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-50">
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>

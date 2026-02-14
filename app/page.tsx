@@ -10,8 +10,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { redirect } from "next/navigation";
- 
- export default function Home() {
-   redirect("/dashboard");
- }
+
+export default function Home() {
+  redirect("/auth/login");
+}
 
