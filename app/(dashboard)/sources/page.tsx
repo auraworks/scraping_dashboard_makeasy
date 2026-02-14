@@ -259,11 +259,11 @@ export default function SourcesPage() {
                   <td className="px-6 py-5 whitespace-nowrap text-center">
                     <Badge
                       className={`${source.status === "수집중"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          : "bg-amber-50 text-amber-600 border-amber-100"
+                          ? "bg-primary-500 text-white border-primary-500"
+                          : "bg-primary-50 text-primary-600 border-primary-100"
                         } border px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-none`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${source.status === "수집중" ? "bg-emerald-500" : "bg-amber-500"
+                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${source.status === "수집중" ? "bg-white" : "bg-primary-400"
                         }`} />
                       {source.status}
                     </Badge>

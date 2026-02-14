@@ -3,13 +3,9 @@
 import React from "react";
 import {
   TrendingUp,
-  CheckSquare,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Database,
-  FileText,
-  Activity,
   Server
 } from "lucide-react";
 import {
@@ -25,7 +21,7 @@ import {
   ArcElement,
   Filler,
 } from "chart.js";
-import { Line, Bar, Doughnut } from "react-chartjs-2";
+import { Line, Doughnut } from "react-chartjs-2";
 
 // Chart.js 등록
 ChartJS.register(
@@ -62,8 +58,6 @@ export default function Dashboard() {
       footerColor: "text-blue-600",
       chartData: [20, 40, 30, 50, 40, 60, 80]
     },
-
-
   ];
 
   // 최근 선정된 뉴스 데이터
@@ -160,26 +154,6 @@ export default function Dashboard() {
     ],
   };
 
-  // 2. 카테고리별 분류 현황 (Bar)
-  const categoryChartData = {
-    labels: ["경제", "정치", "사회", "IT/과학", "라이프", "연예"],
-    datasets: [
-      {
-        label: "문서 수",
-        data: [4500, 3200, 2800, 5100, 2400, 1800],
-        backgroundColor: [
-          "#1F2C5C", // Darkest
-          "#2A3C72",
-          "#364D89",
-          "#425FA2",
-          "#5373BD",
-          "#6B8AD9", // Lightest
-        ],
-        borderRadius: 4,
-      },
-    ],
-  };
-
   // 3. 소스별 점유율 (Doughnut)
   const sourceChartData = {
     labels: ["네이버", "다음", "커뮤니티", "SNS", "기타"],
@@ -199,46 +173,43 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full">
       {/* Hero Section */}
-      <div className="bg-primary-500 text-white rounded-3xl p-8 md:p-10 mb-8 mx-6 mt-6 relative overflow-hidden shadow-lg shadow-primary-900/20">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
+      <div className="bg-primary-500 text-white rounded-none md:rounded-3xl p-6 md:p-10 mb-6 md:mb-8 md:mx-6 mt-0 md:mt-6 relative overflow-hidden shadow-lg shadow-primary-900/20">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 relative z-10">
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 tracking-tight">
               통합 데이터 수집 대시보드
             </h1>
-            <p className="text-primary-100 text-lg mb-6 max-w-xl leading-relaxed">
+            <p className="text-primary-100 text-sm md:text-lg mb-4 md:mb-6 max-w-xl leading-relaxed">
               다양한 채널에서 실시간으로 데이터를 수집하고, AI 분석을 통해 가치 있는 이슈를 발굴하세요.
               현재 <strong>5개 채널</strong>이 정상 작동 중입니다.
             </p>
-            <div className="flex gap-3">
-
-            </div>
           </div>
         </div>
 
         {/* Background Gradients */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-30"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
+        <div className="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-primary-400 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-30"></div>
+        <div className="absolute bottom-0 left-0 w-48 md:w-64 h-48 md:h-64 bg-blue-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
       </div>
 
-      <div className="px-6 pb-8">
+      <div className="px-4 md:px-6 pb-8">
         {/* KPI Cards - 2 Cards Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-4">
+            <div key={idx} className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-3 md:mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-1">{stat.title}</h3>
+                  <h3 className="text-xs md:text-sm font-semibold text-gray-500 mb-1">{stat.title}</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+                    <span className="text-xl md:text-2xl font-bold text-gray-900">{stat.value}</span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">{stat.subtitle}</p>
                 </div>
               </div>
 
               {/* Mini Sparkline */}
-              <div className="flex items-end gap-1 h-16 mb-4">
+              <div className="flex items-end gap-1 h-12 md:h-16 mb-3 md:mb-4">
                 {stat.chartData.map((val, i) => (
                   <div
                     key={i}
@@ -248,7 +219,7 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 pt-3 border-t border-gray-50">
+              <div className="flex items-center gap-2 pt-2 md:pt-3 border-t border-gray-50">
                 <TrendingUp className="w-3 h-3 text-primary-500" />
                 <p className={`text-xs font-semibold ${stat.footerColor}`}>{stat.footer}</p>
               </div>
@@ -256,34 +227,34 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Charts Section - 2 Graphs Side by Side */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+        {/* Charts Section - Stack vertically on mobile */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Main Traffic Chart */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">실시간 수집 트래픽</h3>
+                <h3 className="text-base md:text-lg font-bold text-gray-900">실시간 수집 트래픽</h3>
                 <p className="text-xs text-gray-500 mt-1">시간대별 문서 수집 추이</p>
               </div>
-              <select className="text-xs border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-600 focus:ring-primary-500 focus:border-primary-500">
+              <select className="text-xs border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-600 focus:ring-primary-500 focus:border-primary-500 w-fit">
                 <option>오늘</option>
                 <option>어제</option>
                 <option>지난 7일</option>
               </select>
             </div>
-            <div className="h-64">
+            <div className="h-48 md:h-64">
               <Line data={trafficChartData} options={commonOptions} />
             </div>
           </div>
 
           {/* Source Distribution Chart */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
             <div className="flex flex-col h-full items-center justify-center">
-              <div className="text-center mb-8">
-                <h3 className="text-lg font-bold text-gray-900">데이터 소스 점유율</h3>
+              <div className="text-center mb-4 md:mb-8">
+                <h3 className="text-base md:text-lg font-bold text-gray-900">데이터 소스 점유율</h3>
                 <p className="text-xs text-gray-500 mt-1">채널별 수집 비중</p>
               </div>
-              <div className="w-full h-80 flex items-center justify-center">
+              <div className="w-full h-56 md:h-80 flex items-center justify-center">
                 <Doughnut data={sourceChartData} options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -293,8 +264,8 @@ export default function Dashboard() {
                       labels: {
                         usePointStyle: true,
                         boxWidth: 8,
-                        padding: 20,
-                        font: { size: 11 }
+                        padding: 15,
+                        font: { size: 10 }
                       }
                     }
                   }
@@ -305,47 +276,39 @@ export default function Dashboard() {
         </div>
 
         {/* Table Section - Full Width */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">최근 수집된 주요 이슈</h2>
+              <h2 className="text-base md:text-lg font-bold text-gray-900">최근 수집된 주요 이슈</h2>
               <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                 실시간 업데이트 중
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              
-            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">출처</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">이슈 제목</th>
-                  
-                  
-
                 </tr>
               </thead>
               <tbody>
                 {recentIssues.map((issue) => (
                   <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
-                    <td className="py-4 px-4">
-                      <span className="text-sm font-semibold text-gray-700">{issue.source}</span>
+                    <td className="py-3 md:py-4 px-4">
+                      <span className="text-xs md:text-sm font-semibold text-gray-700">{issue.source}</span>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-3 md:py-4 px-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                        <span className="text-xs md:text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                           {issue.title}
                         </span>
                         <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
                       </div>
                     </td>
-                    
-                    
                   </tr>
                 ))}
               </tbody>

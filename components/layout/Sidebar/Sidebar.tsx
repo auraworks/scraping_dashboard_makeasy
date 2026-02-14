@@ -2,13 +2,17 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { IoLogOutOutline } from "react-icons/io5";
 import { useAuthStore } from "@/components/store/authStore";
 import { useToast } from "@/components/hooks/useToast";
 import Image from "next/image";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+  showLogo?: boolean;
+}
+
+export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const toast = useToast();
@@ -19,7 +23,6 @@ export default function Sidebar() {
     { id: "sources", label: "정보원 관리", href: "/sources" },
     { id: "data", label: "데이터 관리", href: "/data" },
     { id: "logs", label: "로그 관리", href: "/logs" },
-    
   ];
 
   const authPages = [
@@ -32,21 +35,27 @@ export default function Sidebar() {
       await logout();
       toast.success("로그아웃 성공", "로그인 페이지로 이동합니다.");
       router.push("/auth/login");
+      onClose?.();
     } catch (error) {
       toast.error("로그아웃 실패", "다시 시도해주세요.");
     }
   };
 
+  const handleLinkClick = () => {
+    onClose?.();
+  };
+
   return (
-    <aside className="w-64 bg-stone-50 h-screen max-h-screen sticky top-0 flex flex-col ">
+    <aside className="w-64 bg-stone-50 h-screen max-h-screen sticky top-0 flex flex-col">
       {/* 헤더 */}
-      <div className="p-6 ">
-        {/* <h1 className="text-xl font-bold text-gray-900">Makeasy</h1> */}
-        <Image src="/logo_full.png" alt="Logo" width={200} height={50} />
-      </div>
+      {showLogo && (
+        <div className="p-6">
+          <Image src="/logo_full.png" alt="Logo" width={200} height={50} />
+        </div>
+      )}
 
       {/* 메인 네비게이션 */}
-      <nav className="p-4 flex-1">
+      <nav className={`p-4 flex-1 ${!showLogo ? 'pt-16' : ''}`}>
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -54,6 +63,7 @@ export default function Sidebar() {
               <li key={item.id}>
                 <Link
                   href={item.href}
+                  onClick={handleLinkClick}
                   className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                     isActive
                       ? "bg-primary text-white"
