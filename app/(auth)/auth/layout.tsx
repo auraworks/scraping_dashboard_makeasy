@@ -1,11 +1,14 @@
-export default function AuthLayout({
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "관리자 페이지",
+  description: "Inscript 관리자 페이지",
+};
+
+export default function AdminLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50">
-      <div className="w-full flex justify-center">{children}</div>
-    </div>
-  );
+}>) {
+  return <>{children}</>;
 }

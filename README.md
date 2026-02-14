@@ -1,109 +1,84 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# 🌐 Universal Scraping Dashboard (Makeasy)
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+이 프로젝트는 다양한 소스로부터 대량의 데이터를 크롤링하고, 이를 체계적으로 관리, 분석 및 시각화하기 위한 통합 데이터 관리 대시보드입니다.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+![Universal Scraping Dashboard](https://images.unsplash.com/photo-1551288049-bbbda5366a71?q=80&w=2070&auto=format&fit=crop)
 
-## Features
+## 🚀 주요 기능
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+- **📊 실시간 대시보드**: 전체 크롤링 현황, 성공/실패율, 최신 수집 데이터 통계 제공
+- **📁 데이터 관리**: 수집된 데이터의 브라우징, 필터링, 상세 보기 및 관리 기능
+- **🔗 소스/링크 관리**: 크롤링 대상 사이트(Sources) 및 개별 링크 관리 및 설정
+- **📅 주간 이슈 관리**: 수집된 데이터 중 주요 이슈를 선별하여 주간 리포트 형태로 관리
+- **📜 로그 모니터링**: 실시간 크롤링 수행 로그 확인 및 오류 추적
+- **🔐 보안 인증**: Supabase 기반의 강력한 사용자 인증 및 권한 관리 (RBAC)
 
-## Demo
+## 🛠 기술 스택
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+### Frontend
+- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/) (based on Radix UI)
+- **Charts**: [Chart.js](https://www.chartjs.org/) & [react-chartjs-2](https://react-chartjs-2.js.org/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 
-## Deploy to Vercel
+### Backend & Infrastructure
+- **BaaS**: [Supabase](https://supabase.com/) (Auth, Database, Storage)
+- **Auth**: Supabase SSR (Auth Helper)
+- **Deployment**: Vercel (Recommended)
 
-Vercel deployment will guide you through creating a Supabase account and project.
+## 📂 프로젝트 구조
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+```text
+src/
+├── app/                  # Next.js App Router (Pages & Layouts)
+│   ├── (auth)/           # 로그인, 회원가입 등 인증 관련 페이지
+│   └── (dashboard)/      # 대시보드 메인 및 하위 기능 페이지
+│       ├── dashboard/    # 대시보드 홈
+│       ├── data/         # 데이터 관리
+│       ├── sources/      # 수집 소스 관리
+│       ├── logs/         # 크롤링 로그
+│       └── weekly-.../   # 주간 이슈 관련
+├── components/           # 재사용 가능한 UI 컴포넌트
+│   ├── layout/           # 사이드바, 헤더 등 레이아웃 컴포넌트
+│   ├── ui/               # Shadcn UI 기본 컴포넌트
+│   └── [domain]/         # 각 도메인별 전용 컴포넌트
+├── hooks/                # 커스텀 훅 (Domain-driven)
+├── lib/                  # 유틸리티 및 Supabase 클라이언트 설정
+├── store/                # Zustand 상태 저장소
+└── types/                # TypeScript 타입 정의
+```
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+## 🏁 시작하기
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### 1. 프로젝트 클론
+```bash
+git clone https://github.com/auraworks/scraping_dashboard_makeasy.git
+cd scraping_dashboard_makeasy
+```
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### 2. 환경 변수 설정
+`.env.example` 파일을 `.env.local`로 복사하고 Supabase 정보를 입력합니다.
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Clone and run locally
+### 3. 의존성 설치 및 실행
+```bash
+npm install
+npm run dev
+```
+이제 [http://localhost:3000](http://localhost:3000)에서 대시보드를 확인할 수 있습니다.
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+## 📝 주요 화면 안내
 
-2. Create a Next.js app using the Supabase Starter template npx command
+- **Dashboard**: 전반적인 크롤링 상태 요약 정보를 카드와 차트로 제공합니다.
+- **Data Management**: 수집된 모든 로우 데이터를 리스트 형태로 보여주며, 다양한 검색 필터를 제공합니다.
+- **Source Config**: 크롤링 주기, 타겟 URL, 파싱 룰 등을 관리합니다.
+- **Issue Selection**: 주간 단위로 공유하거나 리포팅해야 할 데이터를 선별합니다.
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
-
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
-
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+## 📄 라이선스
+This project is private and owned by Auraworks.
