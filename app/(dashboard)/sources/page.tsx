@@ -185,34 +185,34 @@ export default function SourcesPage() {
 
         {/* 실제 테이블 */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse table-fixed min-w-[1100px]">
             <thead>
               <tr className="bg-gray-50/30 border-b border-gray-100">
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-16">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[5%]">
                   ID
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-24">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   국가
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[15%]">
                   정보원명
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%]">
                   URL
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-28">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   유형
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-28">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   수집 주기
                 </th>
-                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider w-24">
+                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   상태
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-40">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
                   마지막 수집
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-32">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[8%]">
                   등록일
                 </th>
               </tr>
@@ -224,21 +224,21 @@ export default function SourcesPage() {
                   onClick={() => router.push(`/sources/${source.id}`)}
                   className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-5 whitespace-nowrap text-sm font-mono text-gray-400">
+                  <td className="px-6 py-5 whitespace-nowrap text-sm font-mono text-gray-400 truncate">
                     #{source.id}
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-600">
+                    <div className="text-sm font-bold text-gray-600 truncate">
                       {source.country}
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-900 leading-tight">
+                    <div className="text-sm font-bold text-gray-900 leading-tight truncate">
                       {source.name}
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-xs text-gray-400 font-medium max-w-[200px] truncate">
+                    <div className="text-xs text-gray-400 font-medium truncate">
                       {source.url}
                     </div>
                   </td>
@@ -259,8 +259,8 @@ export default function SourcesPage() {
                   <td className="px-6 py-5 whitespace-nowrap text-center">
                     <Badge
                       className={`${source.status === "수집중"
-                          ? "bg-primary-500 text-white border-primary-500"
-                          : "bg-primary-50 text-primary-600 border-primary-100"
+                        ? "bg-primary-500 text-white border-primary-500"
+                        : "bg-primary-50 text-primary-600 border-primary-100"
                         } border px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-none`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${source.status === "수집중" ? "bg-white" : "bg-primary-400"

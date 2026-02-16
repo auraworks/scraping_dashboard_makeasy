@@ -29,6 +29,15 @@ const COUNTRIES = [
   "가나", "과테말라", "그리스", "나이지리아", "남아프리카공화국", "네덜란드", "뉴질랜드", "대만", "독일", "도미니카공화국", "라오스", "러시아", "루마니아", "리투아니아", "말레이시아", "멕시코", "모로코", "몽골", "미국", "미얀마", "베네수엘라", "베트남", "벨기에", "벨라루스", "브라질", "불가리아", "방글라데시", "사우디아라비아", "세르비아", "수단", "스리랑카", "스웨덴", "스위스", "스페인", "슬로바키아", "싱가포르", "아랍에미리트", "아르메니아", "아르헨티나", "아제르바이잔", "알제리", "에콰도르", "에티오피아", "영국", "오만", "오스트리아", "우간다", "우즈베키스탄", "우크라이나", "이라크", "이란", "이스라엘", "이집트", "이탈리아", "인도", "인도네시아", "일본", "중국", "짐바브웨", "체코", "칠레", "카자흐스탄", "카타르", "캄보디아", "캐나다", "케냐", "코스타리카", "코트디부아르", "콜롬비아", "쿠바", "쿠웨이트", "크로아티아", "키르기스스탄", "태국", "탄자니아", "터키 (튀르키예)", "튀니지", "파나마", "파라과이", "파키스탄", "페루", "포르투갈", "폴란드", "프랑스", "핀란드", "필리핀", "헝가리", "호주", "홍콩"
 ].sort((a, b) => a.localeCompare(b, 'ko'));
 
+const CATEGORIES = [
+  { id: 1, name: "뉴스", description: "주요 언론사 뉴스 기사" },
+  { id: 2, name: "커뮤니티", description: "주요 커뮤니티 게시글" },
+  { id: 3, name: "SNS", description: "소셜 미디어 피드" },
+  { id: 4, name: "블로그", description: "개인 및 기업 블로그 포스트" },
+  { id: 5, name: "카페", description: "네이버/다음 카페 게시글" },
+  { id: 6, name: "기타", description: "기타 수집 데이터" },
+];
+
 const actionSchema = z.object({
   type: z.enum(["XPath", "CSS"]),
   value: z.string().min(1, "값을 입력해주세요."),
@@ -65,7 +74,6 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const [types, setTypes] = React.useState<string[]>(
     initialData?.type ? initialData.type.split(',').filter(Boolean).map((t: string) => t.trim()) : []
   );
-  const [typeInput, setTypeInput] = React.useState("");
 
   // Actions state for UI
   const [actions, setActions] = React.useState<{ type: "XPath" | "CSS", value: string }[]>(
@@ -89,15 +97,11 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
     },
   });
 
-  const addType = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && typeInput.trim()) {
-      e.preventDefault();
-      if (!types.includes(typeInput.trim())) {
-        const newTypes = [...types, typeInput.trim()];
-        setTypes(newTypes);
-        form.setValue('type', newTypes.join(', '));
-      }
-      setTypeInput("");
+  const handleTypeSelect = (value: string) => {
+    if (value && !types.includes(value)) {
+      const newTypes = [...types, value];
+      setTypes(newTypes);
+      form.setValue('type', newTypes.join(', '));
     }
   };
 
@@ -243,20 +247,25 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">매체 유형</FormLabel>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">유형</FormLabel>
                     <div className="space-y-3">
-                      <FormControl>
-                        <Input
-                          placeholder="유형 입력 후 Enter (예: 뉴스, 커뮤니티)"
-                          value={typeInput}
-                          onChange={(e) => setTypeInput(e.target.value)}
-                          onKeyDown={addType}
-                          className="h-16 w-full rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6"
-                        />
-                      </FormControl>
+                      <Select onValueChange={handleTypeSelect}>
+                        <FormControl>
+                          <SelectTrigger className="h-16 w-full rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
+                            <SelectValue placeholder="유형 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                          {CATEGORIES.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.name} className="py-3 text-base">
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <p className="text-xs text-gray-400 ml-1 leading-relaxed">
-                        해당 정보원의 매체 성격을 입력해 주세요. (예: 뉴스, 블로그, 카페 등)
-                        여러 개의 유형을 입력하려면 단어 입력 후 <strong>엔터(Enter)</strong>를 눌러주세요.
+                        해당 정보원의 매체 성격을 선택해 주세요. (예: 뉴스, 블로그, 카페 등)
+                        여러 개의 유형을 선택하여 추가할 수 있습니다.
                       </p>
                       {types.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -453,7 +462,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
               />
 
               {/* Description */}
-              
+
             </div>
           </div>
 

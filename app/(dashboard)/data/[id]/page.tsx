@@ -6,39 +6,48 @@ async function getData(id: string) {
   // Demo mock data based on ID
   const items = [
     {
-      id: "1",
+      issueId: "0000124012600001",
       title: "2024년 금리 인하 관련 뉴스 속보 모음",
       source: "네이버 뉴스",
       category: "경제",
       status: "처리완료",
-      collected_at: "24/01/26 10:05",
+      collectedAt: new Date("2024-01-26T10:05:00"),
+      publishedAt: new Date("2024-01-26T09:30:00"),
       format: "JSON",
       content: "오늘 금융통화위원회는 기준금리를 동결하기로 결정했다...",
+      country: "대한민국",
+      type: "뉴스",
     },
     {
-      id: "2",
+      issueId: "0000224012600015",
       title: "MZ세대 트렌드 분석을 위한 인스타그램 태그",
       source: "인스타그램",
       category: "라이프스타일",
       status: "처리중",
-      collected_at: "24/01/26 10:03",
+      collectedAt: new Date("2024-01-26T10:03:00"),
+      publishedAt: new Date("2024-01-26T08:00:00"),
       format: "CSV",
       content: "#OOTD #DailyLook #CafeTour ...",
+      country: "미국",
+      type: "SNS",
     },
     // Add default fallback for others
     {
-      id: "default",
+      issueId: id, // 요청된 ID를 그대로 사용
       title: "Sample Data Title",
       source: "Sample Source",
       category: "IT/과학",
       status: "대기",
-      collected_at: "24/01/26 09:00",
+      collectedAt: new Date("2024-01-26T09:00:00"),
+      publishedAt: new Date("2024-01-26T07:00:00"),
       format: "JSON",
       content: "Sample content...",
+      country: "대한민국",
+      type: "기타",
     }
   ];
 
-  return items.find((item) => item.id === id) || items[2];
+  return items.find((item) => item.issueId === id) || items[2];
 }
 
 export async function generateStaticParams() {

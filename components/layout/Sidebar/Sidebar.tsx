@@ -21,7 +21,9 @@ export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "대시보드", href: "/dashboard" },
     { id: "sources", label: "정보원 관리", href: "/sources" },
+    
     { id: "data", label: "데이터 관리", href: "/data" },
+    { id: "categories", label: "유형 관리", href: "/categories" },
     { id: "logs", label: "로그 관리", href: "/logs" },
   ];
 
@@ -64,11 +66,10 @@ export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
                 <Link
                   href={item.href}
                   onClick={handleLinkClick}
-                  className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${isActive
+                    ? "bg-primary text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   {item.label}
                 </Link>
