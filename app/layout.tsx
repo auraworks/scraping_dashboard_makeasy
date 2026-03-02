@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { ToastContainer } from "@/components/ui/Toast";
 import { ModalContainer } from "@/components/ui/Modal";
+import { QueryProvider } from "@/components/providers";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -43,9 +44,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <ToastContainer />
-          <ModalContainer />
+          <QueryProvider>
+            {children}
+            <ToastContainer />
+            <ModalContainer />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

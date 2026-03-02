@@ -24,19 +24,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { IoMenu } from "react-icons/io5";
+import { useCategories } from "@/components/hooks/categories";
 
 const COUNTRIES = [
   "가나", "과테말라", "그리스", "나이지리아", "남아프리카공화국", "네덜란드", "뉴질랜드", "대만", "독일", "도미니카공화국", "라오스", "러시아", "루마니아", "리투아니아", "말레이시아", "멕시코", "모로코", "몽골", "미국", "미얀마", "베네수엘라", "베트남", "벨기에", "벨라루스", "브라질", "불가리아", "방글라데시", "사우디아라비아", "세르비아", "수단", "스리랑카", "스웨덴", "스위스", "스페인", "슬로바키아", "싱가포르", "아랍에미리트", "아르메니아", "아르헨티나", "아제르바이잔", "알제리", "에콰도르", "에티오피아", "영국", "오만", "오스트리아", "우간다", "우즈베키스탄", "우크라이나", "이라크", "이란", "이스라엘", "이집트", "이탈리아", "인도", "인도네시아", "일본", "중국", "짐바브웨", "체코", "칠레", "카자흐스탄", "카타르", "캄보디아", "캐나다", "케냐", "코스타리카", "코트디부아르", "콜롬비아", "쿠바", "쿠웨이트", "크로아티아", "키르기스스탄", "태국", "탄자니아", "터키 (튀르키예)", "튀니지", "파나마", "파라과이", "파키스탄", "페루", "포르투갈", "폴란드", "프랑스", "핀란드", "필리핀", "헝가리", "호주", "홍콩"
 ].sort((a, b) => a.localeCompare(b, 'ko'));
-
-const CATEGORIES = [
-  { id: 1, name: "뉴스", description: "주요 언론사 뉴스 기사" },
-  { id: 2, name: "커뮤니티", description: "주요 커뮤니티 게시글" },
-  { id: 3, name: "SNS", description: "소셜 미디어 피드" },
-  { id: 4, name: "블로그", description: "개인 및 기업 블로그 포스트" },
-  { id: 5, name: "카페", description: "네이버/다음 카페 게시글" },
-  { id: 6, name: "기타", description: "기타 수집 데이터" },
-];
 
 const actionSchema = z.object({
   type: z.enum(["XPath", "CSS"]),
@@ -71,6 +63,7 @@ import {
 
 export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const router = useRouter();
+  const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
   const [types, setTypes] = React.useState<string[]>(
     initialData?.type ? initialData.type.split(',').filter(Boolean).map((t: string) => t.trim()) : []
   );
@@ -256,11 +249,21 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                          {CATEGORIES.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.name} className="py-3 text-base">
-                              {cat.name}
+                          {isCategoriesLoading ? (
+                            <SelectItem value="_loading" disabled className="py-3 text-base text-gray-400">
+                              로딩 중...
                             </SelectItem>
-                          ))}
+                          ) : categories.length === 0 ? (
+                            <SelectItem value="_empty" disabled className="py-3 text-base text-gray-400">
+                              등록된 유형이 없습니다
+                            </SelectItem>
+                          ) : (
+                            categories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.name} className="py-3 text-base">
+                                {cat.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-gray-400 ml-1 leading-relaxed">

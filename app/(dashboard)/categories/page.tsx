@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
-import { Search, Plus, List } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Search, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
     Pagination,
     PaginationContent,
-    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
@@ -14,28 +13,79 @@ import {
 } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { createBrowserClient } from "@supabase/ssr";
+import { useModal } from "@/components/hooks/useModal";
+import { useToast } from "@/components/hooks/useToast";
+import { ModalContainer } from "@/components/ui/Modal";
 
 export default function CategoriesPage() {
     const router = useRouter();
+    const modal = useModal();
+    const toast = useToast();
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    // Mock Data
-    const categories = [
-        { id: 1, name: "뉴스", description: "주요 언론사 뉴스 기사" },
-        { id: 2, name: "커뮤니티", description: "주요 커뮤니티 게시글" },
-        { id: 3, name: "SNS", description: "소셜 미디어 피드" },
-        { id: 4, name: "블로그", description: "개인 및 기업 블로그 포스트" },
-        { id: 5, name: "카페", description: "네이버/다음 카페 게시글" },
-        { id: 6, name: "기타", description: "기타 수집 데이터" },
-    ];
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const fetchCategories = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from("categories")
+            .select("*")
+            .order("name", { ascending: true });
+
+        if (error) {
+            console.error("Error fetching categories:", error);
+        } else {
+            setCategories(data || []);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
+        e.stopPropagation();
+
+        modal.open({
+            title: "유형 삭제",
+            description: `'${name}' 유형을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`,
+            confirmText: "삭제",
+            cancelText: "취소",
+            onConfirm: async () => {
+                const { error } = await supabase
+                    .from("categories")
+                    .delete()
+                    .eq("id", id);
+
+                if (error) {
+                    toast.error("오류", error.message || "삭제 중 오류가 발생했습니다.");
+                } else {
+                    toast.success("성공", "삭제되었습니다.");
+                    fetchCategories();
+                }
+            },
+        });
+    };
+
+    const filteredCategories = categories.filter((c) =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="p-8 w-full">
             {/* 헤더 섹션 */}
             <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">유형 관리</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2 font-display">유형 관리</h1>
                     <p className="text-gray-500 text-lg">
-                        데이터 수집 대상의 유형을 등록하고 관리합니다.
+                        데이터 수집 대상의 유형(Enum)을 실시간으로 관리합니다.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -59,6 +109,8 @@ export default function CategoriesPage() {
                         </div>
                         <Input
                             placeholder="카테고리명 검색"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-primary-500 transition-all shadow-sm"
                         />
                     </div>
@@ -68,31 +120,57 @@ export default function CategoriesPage() {
                     <table className="w-full border-collapse table-fixed min-w-[600px]">
                         <thead>
                             <tr className="bg-gray-50/30 border-b border-gray-100">
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%]">
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 alphabet-uppercase tracking-wider w-[10%]">
                                     NO.
                                 </th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[80%]">
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 alphabet-uppercase tracking-wider w-[80%]">
                                     유형명
+                                </th>
+                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 alphabet-uppercase tracking-wider w-[10%]">
+                                    관리
                                 </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-50">
-                            {categories.map((category) => (
-                                <tr
-                                    key={category.id}
-                                    onClick={() => router.push(`/categories/${category.id}`)}
-                                    className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
-                                >
-                                    <td className="px-6 py-5 whitespace-nowrap text-sm font-mono text-gray-500 font-bold">
-                                        #{category.id}
-                                    </td>
-                                    <td className="px-6 py-5 whitespace-nowrap">
-                                        <div className="text-base font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                                            {category.name}
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-10 text-center text-gray-400">
+                                        로딩 중...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : filteredCategories.length === 0 ? (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-10 text-center text-gray-400">
+                                        데이터가 없습니다.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredCategories.map((category, index) => (
+                                    <tr
+                                        key={category.id}
+                                        onClick={() => router.push(`/categories/${category.id}`)}
+                                        className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                    >
+                                        <td className="px-6 py-5 whitespace-nowrap text-sm font-mono text-gray-500 font-bold">
+                                            #{index + 1}
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <div className="text-base font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                                                {category.name}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap text-center">
+                                            <button
+                                                onClick={(e) => handleDelete(e, category.id, category.name)}
+                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
+                                                title="삭제"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -126,6 +204,7 @@ export default function CategoriesPage() {
                     </Pagination>
                 </div>
             </div>
+            <ModalContainer />
         </div>
     );
 }

@@ -16,35 +16,72 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { IoMenu } from "react-icons/io5";
+import { useAddCategory, useRenameCategory } from "@/components/hooks/categories";
+import { useToast } from "@/components/hooks/useToast";
 
 const categorySchema = z.object({
-    name: z.string().min(1, "카테고리명을 입력해주세요."),
-    description: z.string().optional(),
+    name: z.string().min(1, "유형명을 입력해주세요."),
 });
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 interface CategoryFormProps {
-    initialData?: Partial<CategoryFormValues> & { id?: number };
+    initialData?: Partial<CategoryFormValues> & { id?: string | number };
     isEdit?: boolean;
 }
 
 export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps) {
     const router = useRouter();
+    const toast = useToast();
+
+    const addCategoryMutation = useAddCategory();
+    const renameCategoryMutation = useRenameCategory();
 
     const form = useForm<CategoryFormValues>({
         resolver: zodResolver(categorySchema),
         defaultValues: {
-            name: initialData?.name || "",
-            description: initialData?.description || "",
+            name: (initialData?.name as string) || "",
         },
     });
 
-    const onSubmit = (data: CategoryFormValues) => {
-        console.log("Form Data:", data);
-        alert(isEdit ? "카테고리 정보가 수정되었습니다." : "새 카테고리가 등록되었습니다.");
-        router.back();
+    const onSubmit = async (data: CategoryFormValues) => {
+        if (isEdit) {
+            const categoryId = initialData?.id as string;
+            const newName = data.name;
+
+            if (categoryId === newName) {
+                router.push("/categories");
+                return;
+            }
+
+            renameCategoryMutation.mutate(
+                { id: categoryId, newName },
+                {
+                    onSuccess: () => {
+                        toast.success("성공", "유형명이 수정되었습니다.");
+                        router.push("/categories");
+                        router.refresh();
+                    },
+                    onError: (error) => {
+                        toast.error("오류", error.message || "수정 중 오류가 발생했습니다.");
+                    },
+                }
+            );
+        } else {
+            addCategoryMutation.mutate(data.name, {
+                onSuccess: () => {
+                    toast.success("성공", "새 유형이 등록되었습니다.");
+                    router.push("/categories");
+                    router.refresh();
+                },
+                onError: (error) => {
+                    toast.error("오류", error.message || "등록 중 오류가 발생했습니다.");
+                },
+            });
+        }
     };
+
+    const isLoading = addCategoryMutation.isPending || renameCategoryMutation.isPending;
 
     return (
         <div className="w-full ">
@@ -54,11 +91,11 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                         <div className="grid grid-cols-1 gap-y-8">
                             {isEdit && (
                                 <div className="space-y-2">
-                                    <FormLabel className="text-base font-bold text-gray-400 ml-1">ID</FormLabel>
+                                    <FormLabel className="text-base font-bold text-gray-400 ml-1">현재 유형명</FormLabel>
                                     <Input
                                         disabled
-                                        value={`#${initialData?.id || "N/A"}`}
-                                        className="h-14 w-full rounded-xl bg-gray-100 border-none text-lg font-mono font-bold text-gray-500 cursor-not-allowed opacity-100 px-5"
+                                        value={initialData?.id || "N/A"}
+                                        className="h-14 w-full rounded-xl bg-gray-100 border-none text-lg font-bold text-gray-500 cursor-not-allowed opacity-100 px-5"
                                     />
                                 </div>
                             )}
@@ -68,29 +105,14 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-bold text-gray-800 ml-1">유형명</FormLabel>
+                                        <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                                            {isEdit ? "새 유형명" : "유형명"}
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="예: 뉴스, 블로그"
                                                 className="h-14 w-full rounded-xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-base font-medium px-5"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage className="text-xs font-medium" />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-base font-bold text-gray-800 ml-1">설명</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="카테고리에 대한 간략한 설명"
-                                                className="h-14 w-full rounded-xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-base font-medium px-5"
+                                                disabled={isLoading}
                                                 {...field}
                                             />
                                         </FormControl>
@@ -123,9 +145,10 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                             </Button>
                             <Button
                                 type="submit"
-                                className="h-14 w-28 rounded-xl bg-primary-500 hover:bg-primary-600 text-white shadow-lg shadow-primary-500/20 font-bold text-base transition-all active:scale-[0.98]"
+                                disabled={isLoading}
+                                className="h-14 w-28 rounded-xl bg-primary-500 hover:bg-primary-600 text-white shadow-lg shadow-primary-500/20 font-bold text-base transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isEdit ? "수정" : "등록"}
+                                {isLoading ? "처리중..." : isEdit ? "수정" : "등록"}
                             </Button>
                         </div>
                     </div>
