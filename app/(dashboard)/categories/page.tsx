@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState } from "react";
 import { Search, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,7 +30,7 @@ export default function CategoriesPage() {
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
     );
 
     const fetchCategories = async () => {
