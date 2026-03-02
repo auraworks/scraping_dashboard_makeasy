@@ -66,3 +66,17 @@ export {
 
 // Log Hooks
 export { logKeys, getLogs, useLogList, type LogFilters } from "./logs";
+
+// Dashboard Hooks
+export {
+  dashboardKeys,
+  getDashboardStats,
+  getHourlyTraffic,
+  getSourceDistribution,
+  useDashboardStats,
+  useHourlyTraffic,
+  useSourceDistribution,
+  type DashboardStats,
+  type HourlyTraffic,
+  type SourceDistribution,
+} from "./dashboard";

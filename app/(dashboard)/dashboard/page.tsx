@@ -22,6 +22,12 @@ import {
   Filler,
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
+import {
+  useDashboardStats,
+  useHourlyTraffic,
+  useSourceDistribution,
+  useDataList,
+} from "@/components/hooks";
 
 // Chart.js 등록
 ChartJS.register(
@@ -37,13 +43,24 @@ ChartJS.register(
   Filler
 );
 
+// Number formatting utility
+function formatNumber(num: number): string {
+  return num.toLocaleString("ko-KR");
+}
+
 export default function Dashboard() {
+  // Fetch real data
+  const { data: statsData, isLoading: statsLoading } = useDashboardStats();
+  const { data: hourlyData, isLoading: hourlyLoading } = useHourlyTraffic();
+  const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
+  const { data: recentData, isLoading: recentLoading } = useDataList({ page: 1, pageSize: 5 });
+
   // KPI 데이터
   const stats = [
     {
       title: "총 수집 문서",
       subtitle: "전체 소스 누적 데이터",
-      value: "1,284,392",
+      value: statsLoading ? "..." : formatNumber(statsData?.totalCount || 0),
       icon: <Database className="w-5 h-5 text-primary-500" />,
       footer: "전일 대비 +1.2%",
       footerColor: "text-emerald-600",
@@ -52,7 +69,7 @@ export default function Dashboard() {
     {
       title: "금일 신규 수집",
       subtitle: "실시간 수집 현황",
-      value: "14,205",
+      value: statsLoading ? "..." : formatNumber(statsData?.todayCount || 0),
       icon: <Server className="w-5 h-5 text-blue-500" />,
       footer: "지난 시간 대비 +320건",
       footerColor: "text-blue-600",
@@ -61,58 +78,13 @@ export default function Dashboard() {
   ];
 
   // 최근 선정된 뉴스 데이터
-  const recentIssues = [
-    {
-      id: 1,
-      source: "네이버 뉴스",
-      icon: "📰",
-      title: "AI 기술 발전과 일자리 변화 보고서",
-      category: "IT/과학",
-      importance: "상",
-      status: "분석완료",
-      progress: 100
-    },
-    {
-      id: 2,
-      source: "블라인드",
-      icon: "💬",
-      title: "2024년 상반기 채용 트렌드 분석",
-      category: "사회/노동",
-      importance: "중",
-      status: "검토중",
-      progress: 60
-    },
-    {
-      id: 3,
-      source: "다음 뉴스",
-      icon: "📰",
-      title: "글로벌 경제 위기 대응 전략",
-      category: "경제",
-      importance: "상",
-      status: "선별완료",
-      progress: 85
-    },
-    {
-      id: 4,
-      source: "인스타그램",
-      icon: "📱",
-      title: "MZ세대 소비 패턴 변화 (해시태그 분석)",
-      category: "라이프스타일",
-      importance: "중",
-      status: "수집중",
-      progress: 45
-    },
-    {
-      id: 5,
-      source: "트위터(X)",
-      icon: "🐦",
-      title: "신규 스마트폰 출시 반응 모니터링",
-      category: "IT/테크",
-      importance: "하",
-      status: "대기",
-      progress: 10
-    }
-  ];
+  const recentIssues = recentData?.data?.map((item) => ({
+    id: item.id,
+    source: item.sources?.name || "알 수 없음",
+    icon: "📰",
+    title: item.title || "제목 없음",
+    category: item.category || item.sources?.category || "기타",
+  })) || [];
 
   // 차트 옵션 공통
   const commonOptions = {
@@ -137,11 +109,11 @@ export default function Dashboard() {
 
   // 1. 수집 트래픽 차트 (Line)
   const trafficChartData = {
-    labels: ["00시", "04시", "08시", "12시", "16시", "20시", "24시"],
+    labels: hourlyData?.map((d) => d.hour) || ["00시", "04시", "08시", "12시", "16시", "20시", "24시"],
     datasets: [
       {
         label: "수집 문서 수",
-        data: [1200, 1900, 3000, 5000, 4200, 6000, 3500],
+        data: hourlyData?.map((d) => d.count) || [0, 0, 0, 0, 0, 0, 0],
         borderColor: "#1F2C5C",
         backgroundColor: "rgba(31, 44, 92, 0.05)",
         fill: true,
@@ -155,11 +127,14 @@ export default function Dashboard() {
   };
 
   // 3. 소스별 점유율 (Doughnut)
+  const sourceLabels = sourceData?.slice(0, 5).map((d) => d.source) || ["데이터 없음"];
+  const sourceCounts = sourceData?.slice(0, 5).map((d) => d.count) || [1];
+
   const sourceChartData = {
-    labels: ["네이버", "다음", "커뮤니티", "SNS", "기타"],
+    labels: sourceLabels,
     datasets: [
       {
-        data: [45, 25, 15, 10, 5],
+        data: sourceCounts,
         backgroundColor: [
           "#1F2C5C", // Primary
           "#324682",
@@ -242,7 +217,11 @@ export default function Dashboard() {
               </select>
             </div>
             <div className="h-48 md:h-64">
-              <Line data={trafficChartData} options={commonOptions} />
+              {hourlyLoading ? (
+                <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
+              ) : (
+                <Line data={trafficChartData} options={commonOptions} />
+              )}
             </div>
           </div>
 
@@ -254,21 +233,25 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-500 mt-1">채널별 수집 비중</p>
               </div>
               <div className="w-full h-56 md:h-80 flex items-center justify-center">
-                <Doughnut data={sourceChartData} options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                      labels: {
-                        usePointStyle: true,
-                        boxWidth: 8,
-                        padding: 15,
-                        font: { size: 10 }
+                {sourceLoading ? (
+                  <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
+                ) : (
+                  <Doughnut data={sourceChartData} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                        labels: {
+                          usePointStyle: true,
+                          boxWidth: 8,
+                          padding: 15,
+                          font: { size: 10 }
+                        }
                       }
                     }
-                  }
-                }} />
+                  }} />
+                )}
               </div>
             </div>
           </div>
@@ -295,27 +278,39 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentIssues.map((issue) => (
-                  <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
-                    <td className="py-3 md:py-4 px-4">
-                      <span className="text-xs md:text-sm font-semibold text-gray-700">{issue.source}</span>
-                    </td>
-                    <td className="py-3 md:py-4 px-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs md:text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
-                          {issue.title}
-                        </span>
-                        <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
-                      </div>
-                    </td>
+                {recentLoading ? (
+                  <tr>
+                    <td colSpan={2} className="py-8 text-center text-gray-400">로딩 중...</td>
                   </tr>
-                ))}
+                ) : recentIssues.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="py-8 text-center text-gray-400">데이터가 없습니다</td>
+                  </tr>
+                ) : (
+                  recentIssues.map((issue) => (
+                    <tr key={issue.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors group">
+                      <td className="py-3 md:py-4 px-4">
+                        <span className="text-xs md:text-sm font-semibold text-gray-700">{issue.source}</span>
+                      </td>
+                      <td className="py-3 md:py-4 px-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs md:text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                            {issue.title}
+                          </span>
+                          <span className="text-xs text-gray-400 mt-0.5">{issue.category}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="flex items-center justify-end gap-3 mt-4">
-            <span className="text-xs text-gray-400">1-5 of 42 items</span>
+            <span className="text-xs text-gray-400">
+              1-{Math.min(5, recentData?.total || 0)} of {recentData?.total || 0} items
+            </span>
             <div className="flex gap-1">
               <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-50">
                 <ChevronLeft className="w-3.5 h-3.5" />
