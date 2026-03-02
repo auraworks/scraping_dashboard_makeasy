@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Filter, MoreHorizontal, CheckCircle2, XCircle } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -14,72 +14,53 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import { useLogList } from "@/components/hooks";
 
 export default function LogsPage() {
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [page, setPage] = React.useState(1);
 
-  const logs = [
-    {
-      id: 1,
-      sourceName: "네이버 뉴스",
-      url: "https://news.naver.com",
-      timestamp: "2024/01/26 10:00:01",
-      result: "SUCCESS",
-      details: "총 15건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 2,
-      sourceName: "인스타그램",
-      url: "https://instagram.com/explore/tags/trend",
-      timestamp: "2024/01/26 10:05:42",
-      result: "SUCCESS",
-      details: "총 42건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 3,
-      sourceName: "다음 뉴스",
-      url: "https://news.daum.net",
-      timestamp: "2024/01/26 10:10:15",
-      result: "FAILURE",
-      details: "수집 실패",
-      errorLog: "TimeoutError: Page load exceeded 30s",
-    },
-    {
-      id: 4,
-      sourceName: "테크미디어",
-      url: "https://techmedia.jp/news",
-      timestamp: "2024/01/26 10:15:00",
-      result: "SUCCESS",
-      details: "총 8건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 5,
-      sourceName: "Reddit",
-      url: "https://reddit.com/r/technology",
-      timestamp: "2024/01/26 10:20:22",
-      result: "SUCCESS",
-      details: "총 25건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 6,
-      sourceName: "필리핀 커뮤니티",
-      url: "https://philippine-forum.com",
-      timestamp: "2024/01/26 10:25:11",
-      result: "FAILURE",
-      details: "수집 실패",
-      errorLog: "ProxyError: Could not connect to Manila relay node",
-    },
-  ];
+  const {
+    data: logsData,
+    isLoading,
+    error,
+  } = useLogList({
+    search: searchTerm || undefined,
+    page,
+    pageSize: 10,
+  });
+
+  const logs = logsData?.data || [];
+  const totalPages = logsData?.totalPages || 1;
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleString("ko-KR", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+      .replace(/\./g, "/")
+      .replace(/\s/g, "");
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
 
   return (
     <div className="p-8 w-full">
       {/* 헤더 섹션 */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">로그 관리</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+          로그 관리
+        </h1>
         <p className="text-gray-500 text-lg">
           시스템 수집 실시간 로그를 모니터링합니다.
         </p>
@@ -95,6 +76,8 @@ export default function LogsPage() {
             </div>
             <Input
               placeholder="정보원명 또는 URL 검색"
+              value={searchTerm}
+              onChange={(event) => handleSearch(event.target.value)}
               className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:border-primary-500 transition-all shadow-sm"
             />
           </div>
@@ -122,51 +105,91 @@ export default function LogsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-50">
-              {logs.map((log) => (
-                <tr
-                  key={log.id}
-                  onClick={() => router.push(`/logs/${log.id}`)}
-                  className="group hover:bg-gray-50/80 transition-all cursor-pointer"
-                >
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                      {log.sourceName}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-xs text-gray-400 font-medium truncate font-mono">
-                      {log.url}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="text-sm text-gray-600 font-medium font-mono">
-                      {log.timestamp}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${log.result === "SUCCESS"
-                          ? "bg-primary-50 text-primary-600 border-primary-100"
-                          : "bg-primary-900 text-white border-primary-900"
-                          }`}
-                      >
-                        {log.result === "SUCCESS" ? (
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        ) : (
-                          <XCircle className="w-3.5 h-3.5" />
-                        )}
-                        {log.result === "SUCCESS" ? "SUCCESS" : "FAIL"}
-                      </Badge>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${log.result === "FAILURE" ? "text-rose-500" : "text-gray-400 italic"}`}>
-                      {log.errorLog}
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+                      <span className="text-gray-400 font-medium">
+                        로딩 중...
+                      </span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <span className="text-red-500 font-medium">
+                      데이터를 불러오는 중 오류가 발생했습니다.
+                    </span>
+                  </td>
+                </tr>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <span className="text-gray-400 font-medium">
+                      등록된 로그가 없습니다.
+                    </span>
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => {
+                  const level = log.level?.toLowerCase() || "";
+                  const isSuccess = level !== "error" && level !== "failure";
+                  const sourceName =
+                    log.sources?.name || `#${log.source_id ?? "-"}`;
+                  const errorMessage = isSuccess ? "-" : log.message || "-";
+
+                  return (
+                    <tr
+                      key={log.id}
+                      onClick={() => router.push(`/logs/${log.id}`)}
+                      className="group hover:bg-gray-50/80 transition-all cursor-pointer"
+                    >
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                          {sourceName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="text-xs text-gray-400 font-medium truncate font-mono">
+                          {log.url || "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="text-sm text-gray-600 font-medium font-mono">
+                          {formatDate(log.created_at)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${
+                              isSuccess
+                                ? "bg-primary-50 text-primary-600 border-primary-100"
+                                : "bg-primary-900 text-white border-primary-900"
+                            }`}
+                          >
+                            {isSuccess ? (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            ) : (
+                              <XCircle className="w-3.5 h-3.5" />
+                            )}
+                            {isSuccess ? "SUCCESS" : "FAIL"}
+                          </Badge>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div
+                          className={`text-sm font-medium ${isSuccess ? "text-gray-400 italic" : "text-rose-500"}`}
+                        >
+                          {errorMessage}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -177,23 +200,46 @@ export default function LogsPage() {
             <PaginationContent className="gap-2">
               <PaginationItem>
                 <PaginationPrevious
-                  href="#"
-                  className="rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all"
+                  onClick={() => page > 1 && setPage(page - 1)}
+                  className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
                 />
               </PaginationItem>
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  isActive
-                  className="w-10 h-10 rounded-xl bg-primary-500 text-white border-none font-bold shadow-md shadow-primary-200 hover:bg-primary-600 transition-all"
-                >
-                  1
-                </PaginationLink>
-              </PaginationItem>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setPage(pageNum)}
+                      isActive={page === pageNum}
+                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${
+                        page === pageNum
+                          ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
+                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              {totalPages > 5 && page < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
               <PaginationItem>
                 <PaginationNext
-                  href="#"
-                  className="rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all"
+                  onClick={() => page < totalPages && setPage(page + 1)}
+                  className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
                 />
               </PaginationItem>
             </PaginationContent>

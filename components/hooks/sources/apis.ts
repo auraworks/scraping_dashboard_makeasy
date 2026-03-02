@@ -22,11 +22,9 @@ export async function getSources(
   if (filters?.country && filters.country !== "all") {
     query = query.eq("country", filters.country);
   }
-  if (filters?.type && filters.type !== "all") {
-    query = query.eq("type", filters.type);
-  }
-  if (filters?.status && filters.status !== "all") {
-    query = query.eq("status", filters.status);
+  if (filters?.category && filters.category !== "all") {
+    // Use cs (contains) for JSONB array to check if category exists in the array
+    query = query.contains("category", [filters.category]);
   }
   if (filters?.search) {
     query = query.or(`name.ilike.%${filters.search}%,url.ilike.%${filters.search}%`);
@@ -77,7 +75,7 @@ export async function getSourceById(id: number): Promise<Source | null> {
 
 // Create new source
 export async function createSource(
-  inputSource: Omit<Source, "id" | "created_at" | "updated_at">
+  inputSource: Omit<Source, "id" | "created_at">
 ): Promise<Source> {
   const supabase = createClient();
 
@@ -101,16 +99,13 @@ export async function createSource(
 // Update source
 export async function updateSource(
   id: number,
-  updates: Partial<Omit<Source, "id" | "created_at" | "updated_at">>
+  updates: Partial<Omit<Source, "id" | "created_at">>
 ): Promise<Source> {
   const supabase = createClient();
 
   const { data, error } = await supabase
     .from("sources")
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
@@ -139,20 +134,4 @@ export async function deleteSource(id: number): Promise<void> {
       details: error.details,
     } as ApiError;
   }
-}
-
-// Update source status
-export async function updateSourceStatus(
-  id: number,
-  status: Source["status"]
-): Promise<Source> {
-  return updateSource(id, { status });
-}
-
-// Update last collected timestamp
-export async function updateLastCollected(
-  id: number,
-  timestamp: string
-): Promise<Source> {
-  return updateSource(id, { last_collected: timestamp });
 }

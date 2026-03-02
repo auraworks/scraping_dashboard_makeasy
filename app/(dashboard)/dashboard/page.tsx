@@ -181,9 +181,8 @@ export default function Dashboard() {
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 tracking-tight">
               통합 데이터 수집 대시보드
             </h1>
-            <p className="text-primary-100 text-sm md:text-lg mb-4 md:mb-6 max-w-xl leading-relaxed">
+            <p className="text-primary-100 text-sm md:text-lg mb-4 md:mb-6 leading-relaxed">
               다양한 채널에서 실시간으로 데이터를 수집하고, AI 분석을 통해 가치 있는 이슈를 발굴하세요.
-              현재 <strong>5개 채널</strong>이 정상 작동 중입니다.
             </p>
           </div>
         </div>

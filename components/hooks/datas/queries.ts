@@ -1,14 +1,14 @@
 // Data Query Hooks
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { dataKeys, DataFilters } from "./keys";
-import { getData, getDataById, getDataBySource } from "./apis";
-import type { Data, PaginatedResponse, ApiError } from "@/types/database";
+import { getData, getDataById, getDataByDataId, getDataBySource, getCountries, getSourceCategories } from "./apis";
+import type { DataWithSource, Country, PaginatedResponse, ApiError } from "@/types/database";
 
 // Use Data List with filters
 export function useDataList(
   filters?: DataFilters,
   options?: Omit<
-    UseQueryOptions<PaginatedResponse<Data>, ApiError, PaginatedResponse<Data>, ReturnType<typeof dataKeys.list>>,
+    UseQueryOptions<PaginatedResponse<DataWithSource>, ApiError, PaginatedResponse<DataWithSource>, ReturnType<typeof dataKeys.list>>,
     "queryKey" | "queryFn"
   >
 ) {
@@ -19,11 +19,11 @@ export function useDataList(
   });
 }
 
-// Use Data Detail
+// Use Data Detail by ID
 export function useDataDetail(
-  id: string,
+  id: number,
   options?: Omit<
-    UseQueryOptions<Data | null, ApiError, Data | null, ReturnType<typeof dataKeys.detail>>,
+    UseQueryOptions<DataWithSource | null, ApiError, DataWithSource | null, ReturnType<typeof dataKeys.detail>>,
     "queryKey" | "queryFn"
   >
 ) {
@@ -35,13 +35,29 @@ export function useDataDetail(
   });
 }
 
+// Use Data Detail by data_id (UUID)
+export function useDataByDataId(
+  dataId: string,
+  options?: Omit<
+    UseQueryOptions<DataWithSource | null, ApiError, DataWithSource | null, ReturnType<typeof dataKeys.byDataId>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dataKeys.byDataId(dataId),
+    queryFn: () => getDataByDataId(dataId),
+    enabled: !!dataId,
+    ...options,
+  });
+}
+
 // Use Data by Source
 export function useDataBySource(
   sourceId: number,
   page = 1,
   pageSize = 10,
   options?: Omit<
-    UseQueryOptions<PaginatedResponse<Data>, ApiError, PaginatedResponse<Data>, ReturnType<typeof dataKeys.bySource>>,
+    UseQueryOptions<PaginatedResponse<DataWithSource>, ApiError, PaginatedResponse<DataWithSource>, ReturnType<typeof dataKeys.bySource>>,
     "queryKey" | "queryFn"
   >
 ) {
@@ -49,6 +65,34 @@ export function useDataBySource(
     queryKey: dataKeys.bySource(sourceId),
     queryFn: () => getDataBySource(sourceId, page, pageSize),
     enabled: !!sourceId,
+    ...options,
+  });
+}
+
+// Use Countries list (for filter dropdown)
+export function useCountries(
+  options?: Omit<
+    UseQueryOptions<Country[], ApiError, Country[], ReturnType<typeof dataKeys.countries>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dataKeys.countries(),
+    queryFn: getCountries,
+    ...options,
+  });
+}
+
+// Use Source Categories list (for filter dropdown)
+export function useSourceCategories(
+  options?: Omit<
+    UseQueryOptions<string[], ApiError, string[], ReturnType<typeof dataKeys.categories>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dataKeys.categories(),
+    queryFn: getSourceCategories,
     ...options,
   });
 }

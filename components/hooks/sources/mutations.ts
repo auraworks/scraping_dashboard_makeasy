@@ -4,50 +4,48 @@ import {
   createSource,
   updateSource,
   deleteSource,
-  updateSourceStatus,
-  updateLastCollected,
 } from "./apis";
 import { sourceKeys } from "./keys";
 import type { Source, ApiError } from "@/types/database";
 
 // Create Source Mutation
 export function useCreateSource(
-  options?: Omit<
-    UseMutationOptions<Source, ApiError, Omit<Source, "id" | "created_at" | "updated_at">>,
-    "mutationFn" | "onSuccess"
-  >
+  options?: UseMutationOptions<Source, ApiError, Omit<Source, "id" | "created_at">>
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Source, ApiError, Omit<Source, "id" | "created_at">>({
     mutationFn: createSource,
-    onSuccess: () => {
+    onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
+      options?.onSuccess?.(data, variables, onMutateResult, context);
     },
-    ...options,
+    onError: (error, variables, onMutateResult, context) => {
+      options?.onError?.(error, variables, onMutateResult, context);
+    },
   });
 }
 
 // Update Source Mutation
 export function useUpdateSource(
-  options?: Omit<
-    UseMutationOptions<
+  options?: UseMutationOptions<
       Source,
       ApiError,
-      { id: number; updates: Partial<Omit<Source, "id" | "created_at" | "updated_at">> }
-    >,
-    "mutationFn" | "onSuccess"
-  >
+      { id: number; updates: Partial<Omit<Source, "id" | "created_at">> }
+    >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Source, ApiError, { id: number; updates: Partial<Omit<Source, "id" | "created_at">> }>({
     mutationFn: ({ id, updates }) => updateSource(id, updates),
-    onSuccess: (data) => {
+    onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: sourceKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: sourceKeys.detail(variables.id) });
+      options?.onSuccess?.(data, variables, onMutateResult, context);
     },
-    ...options,
+    onError: (error, variables, onMutateResult, context) => {
+      options?.onError?.(error, variables, onMutateResult, context);
+    },
   });
 }
 
@@ -65,44 +63,6 @@ export function useDeleteSource(
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
       queryClient.removeQueries({ queryKey: sourceKeys.detail(id) });
-    },
-    ...options,
-  });
-}
-
-// Update Source Status Mutation
-export function useUpdateSourceStatus(
-  options?: Omit<
-    UseMutationOptions<Source, ApiError, { id: number; status: Source["status"] }>,
-    "mutationFn" | "onSuccess"
-  >
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, status }) => updateSourceStatus(id, status),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: sourceKeys.detail(data.id) });
-    },
-    ...options,
-  });
-}
-
-// Update Last Collected Mutation
-export function useUpdateLastCollected(
-  options?: Omit<
-    UseMutationOptions<Source, ApiError, { id: number; timestamp: string }>,
-    "mutationFn" | "onSuccess"
-  >
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, timestamp }) => updateLastCollected(id, timestamp),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: sourceKeys.detail(data.id) });
     },
     ...options,
   });

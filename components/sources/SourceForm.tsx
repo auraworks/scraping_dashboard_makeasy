@@ -25,10 +25,105 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { IoMenu } from "react-icons/io5";
 import { useCategories } from "@/components/hooks/categories";
+import {
+  useCreateSource,
+  useUpdateSource,
+} from "@/components/hooks/sources/mutations";
+import { useToast } from "@/components/hooks/useToast";
+import { Loader2, Box } from "lucide-react";
+import type { Country, Json } from "@/types/database";
 
 const COUNTRIES = [
-  "가나", "과테말라", "그리스", "나이지리아", "남아프리카공화국", "네덜란드", "뉴질랜드", "대만", "독일", "도미니카공화국", "라오스", "러시아", "루마니아", "리투아니아", "말레이시아", "멕시코", "모로코", "몽골", "미국", "미얀마", "베네수엘라", "베트남", "벨기에", "벨라루스", "브라질", "불가리아", "방글라데시", "사우디아라비아", "세르비아", "수단", "스리랑카", "스웨덴", "스위스", "스페인", "슬로바키아", "싱가포르", "아랍에미리트", "아르메니아", "아르헨티나", "아제르바이잔", "알제리", "에콰도르", "에티오피아", "영국", "오만", "오스트리아", "우간다", "우즈베키스탄", "우크라이나", "이라크", "이란", "이스라엘", "이집트", "이탈리아", "인도", "인도네시아", "일본", "중국", "짐바브웨", "체코", "칠레", "카자흐스탄", "카타르", "캄보디아", "캐나다", "케냐", "코스타리카", "코트디부아르", "콜롬비아", "쿠바", "쿠웨이트", "크로아티아", "키르기스스탄", "태국", "탄자니아", "터키 (튀르키예)", "튀니지", "파나마", "파라과이", "파키스탄", "페루", "포르투갈", "폴란드", "프랑스", "핀란드", "필리핀", "헝가리", "호주", "홍콩"
-].sort((a, b) => a.localeCompare(b, 'ko'));
+  "가나",
+  "과테말라",
+  "그리스",
+  "나이지리아",
+  "남아프리카공화국",
+  "네덜란드",
+  "뉴질랜드",
+  "대만",
+  "독일",
+  "도미니카공화국",
+  "라오스",
+  "러시아",
+  "루마니아",
+  "리투아니아",
+  "말레이시아",
+  "멕시코",
+  "모로코",
+  "몽골",
+  "미국",
+  "미얀마",
+  "베네수엘라",
+  "베트남",
+  "벨기에",
+  "벨라루스",
+  "브라질",
+  "불가리아",
+  "방글라데시",
+  "사우디아라비아",
+  "세르비아",
+  "수단",
+  "스리랑카",
+  "스웨덴",
+  "스위스",
+  "스페인",
+  "슬로바키아",
+  "싱가포르",
+  "아랍에미리트",
+  "아르메니아",
+  "아르헨티나",
+  "아제르바이잔",
+  "알제리",
+  "에콰도르",
+  "에티오피아",
+  "영국",
+  "오만",
+  "오스트리아",
+  "우간다",
+  "우즈베키스탄",
+  "우크라이나",
+  "이라크",
+  "이란",
+  "이스라엘",
+  "이집트",
+  "이탈리아",
+  "인도",
+  "인도네시아",
+  "일본",
+  "중국",
+  "짐바브웨",
+  "체코",
+  "칠레",
+  "카자흐스탄",
+  "카타르",
+  "캄보디아",
+  "캐나다",
+  "케냐",
+  "코스타리카",
+  "코트디부아르",
+  "콜롬비아",
+  "쿠바",
+  "쿠웨이트",
+  "크로아티아",
+  "키르기스스탄",
+  "태국",
+  "탄자니아",
+  "터키 (튀르키예)",
+  "튀니지",
+  "파나마",
+  "파라과이",
+  "파키스탄",
+  "페루",
+  "포르투갈",
+  "폴란드",
+  "프랑스",
+  "핀란드",
+  "필리핀",
+  "헝가리",
+  "호주",
+  "홍콩",
+].sort((a, b) => a.localeCompare(b, "ko"));
 
 const actionSchema = z.object({
   type: z.enum(["XPath", "CSS"]),
@@ -38,55 +133,122 @@ const actionSchema = z.object({
 const sourceSchema = z.object({
   country: z.string().min(1, "국가를 선택해주세요."),
   name: z.string().min(1, "정보원명을 입력해주세요."),
-  url: z.string().url("올바른 URL을 입력해주세요."),
-  type: z.string().min(1, "유형을 선택해주세요."),
-  cycle: z.string().min(1, "수집 주기를 입력해주세요."),
+  url: z.string().min(1, "URL을 입력해주세요."),
+  type: z.string(), // category는 선택 사항 (null 허용)
+  cycle: z.string(),
   status: z.string().min(1, "상태를 선택해주세요."),
-  actions: z.array(actionSchema),
+  actions: z.array(actionSchema).optional(),
   parsingPrompt: z.string().optional(),
-  description: z.string().optional(),
+  description: z.string().optional(), // Maps to memo in DB
+  articleClass: z.string().optional(), // Maps to article_class in DB
+  contentClass: z
+    .object({ type: z.enum(["XPath", "CSS"]), value: z.string() })
+    .optional()
+    .nullable(), // Maps to content_class in DB
 });
 
 type SourceFormValues = z.infer<typeof sourceSchema>;
 
 interface SourceFormProps {
-  initialData?: any;
+  initialData?: {
+    id?: number;
+    country?: Country | null;
+    name?: string | null;
+    url?: string | null;
+    category?: string[] | null; // JSONB array
+    type?: string;
+    frequency?: number | null;
+    is_live?: boolean | null;
+    actions?: Json | null;
+    prompt?: string | null;
+    article_class?: string | null;
+    content_class?: Json | null;
+    memo?: string | null;
+    created_at?: string;
+    last_collected?: string;
+    source_id?: string | null;
+  };
   isEdit?: boolean;
 }
 
 import { Badge } from "@/components/ui/badge";
 import {
-  Database, Settings, FileCode, Info, Globe, Calendar,
-  Clock, Hash, ChevronDown, X, MousePointer2, PlusCircle,
-  GripVertical, ListOrdered, Code2, MessageSquareCode, Brain
+  Database,
+  Globe,
+  Calendar,
+  Clock,
+  Hash,
+  X,
+  PlusCircle,
+  ListOrdered,
+  Brain,
 } from "lucide-react";
+
+// DB는 "xpath"/"css" 소문자로 저장하므로, 로드 시 폼 enum 형식으로 정규화
+const normalizeType = (t: string): "XPath" | "CSS" =>
+  t?.toLowerCase() === "css" ? "CSS" : "XPath";
+
+const normalizeActions = (
+  raw: unknown,
+): { type: "XPath" | "CSS"; value: string }[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((a) => a && typeof a === "object" && "value" in a)
+    .map((a) => ({
+      type: normalizeType((a as { type: string }).type),
+      value: (a as { value: string }).value,
+    }));
+};
+
+const normalizeContentClass = (
+  raw: unknown,
+): { type: "XPath" | "CSS"; value: string } | undefined => {
+  const arr = Array.isArray(raw) ? raw : null;
+  const first = arr?.[0];
+  if (!first || typeof first !== "object" || !("value" in first)) return undefined;
+  return {
+    type: normalizeType((first as { type: string }).type),
+    value: (first as { value: string }).value,
+  };
+};
 
 export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const router = useRouter();
-  const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
+  const { data: categories = [], isLoading: isCategoriesLoading } =
+    useCategories();
   const [types, setTypes] = React.useState<string[]>(
-    initialData?.type ? initialData.type.split(',').filter(Boolean).map((t: string) => t.trim()) : []
+    initialData?.category || [],
   );
 
-  // Actions state for UI
-  const [actions, setActions] = React.useState<{ type: "XPath" | "CSS", value: string }[]>(
-    initialData?.actions || []
-  );
-  const [currentActionType, setCurrentActionType] = React.useState<"XPath" | "CSS">("XPath");
+  // Actions state for UI — DB 소문자 타입을 정규화하여 초기화
+  const [actions, setActions] = React.useState<
+    { type: "XPath" | "CSS"; value: string }[]
+  >(normalizeActions(initialData?.actions));
+  const [currentActionType, setCurrentActionType] = React.useState<
+    "XPath" | "CSS"
+  >("XPath");
   const [currentActionValue, setCurrentActionValue] = React.useState("");
+
+  // Content Class state for UI
+  const [contentClassType, setContentClassType] = React.useState<
+    "XPath" | "CSS"
+  >("XPath");
+  const [contentClassValue, setContentClassValue] = React.useState("");
 
   const form = useForm<SourceFormValues>({
     resolver: zodResolver(sourceSchema),
     defaultValues: {
-      country: initialData?.country || "대한민국",
-      name: initialData?.name || "",
-      url: initialData?.url || "",
-      type: initialData?.type || "",
-      cycle: initialData?.cycle || "일주일",
-      status: initialData?.status || "대기",
-      actions: initialData?.actions || [],
-      parsingPrompt: initialData?.parsingPrompt || "",
-      description: initialData?.description || "",
+      country: initialData?.country ?? "대한민국",
+      name: initialData?.name ?? "",
+      url: initialData?.url ?? "",
+      type: initialData?.category?.join(", ") ?? "",
+      cycle: initialData?.frequency?.toString() ?? "",
+      status: initialData?.is_live === true ? "수집함" : "수집안함",
+      actions: normalizeActions(initialData?.actions),
+      parsingPrompt: initialData?.prompt ?? "",
+      description: initialData?.memo ?? "",
+      articleClass: initialData?.article_class ?? "",
+      contentClass: normalizeContentClass(initialData?.content_class),
     },
   });
 
@@ -94,22 +256,25 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
     if (value && !types.includes(value)) {
       const newTypes = [...types, value];
       setTypes(newTypes);
-      form.setValue('type', newTypes.join(', '));
+      form.setValue("type", newTypes.join(", "), { shouldValidate: true });
     }
   };
 
   const removeType = (typeToRemove: string) => {
-    const newTypes = types.filter(t => t !== typeToRemove);
+    const newTypes = types.filter((t) => t !== typeToRemove);
     setTypes(newTypes);
-    form.setValue('type', newTypes.join(', '));
+    form.setValue("type", newTypes.join(", "), { shouldValidate: true });
   };
 
   const addAction = () => {
     if (currentActionValue.trim()) {
-      const newAction = { type: currentActionType, value: currentActionValue.trim() };
+      const newAction = {
+        type: currentActionType,
+        value: currentActionValue.trim(),
+      };
       const newActions = [...actions, newAction];
       setActions(newActions);
-      form.setValue('actions', newActions);
+      form.setValue("actions", newActions, { shouldValidate: true });
       setCurrentActionValue("");
     }
   };
@@ -117,22 +282,95 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const removeAction = (index: number) => {
     const newActions = actions.filter((_, i) => i !== index);
     setActions(newActions);
-    form.setValue('actions', newActions);
+    form.setValue("actions", newActions, { shouldValidate: true });
   };
 
-  const onSubmit = (data: SourceFormValues) => {
-    console.log("Form Data:", data);
-    alert(isEdit ? "정보원 정보가 수정되었습니다." : "새 정보원이 등록되었습니다.");
-    router.back();
+  // Initialize content class UI state from initialData
+  React.useEffect(() => {
+    const normalized = normalizeContentClass(initialData?.content_class);
+    if (normalized) {
+      setContentClassType(normalized.type);
+      setContentClassValue(normalized.value);
+    }
+  }, [initialData]);
+
+  const toast = useToast();
+
+  const { mutate: createSource, isPending: isCreating } = useCreateSource({
+    onSuccess: () => {
+      toast.success("등록 완료", "새 정보원이 등록되었습니다.");
+      router.push("/sources");
+    },
+    onError: (error) => {
+      toast.error("등록 실패", error.message);
+    },
+  });
+
+  const { mutate: updateSource, isPending: isUpdating } = useUpdateSource({
+    onSuccess: () => {
+      toast.success("수정 완료", "정보원 정보가 수정되었습니다.");
+      router.push("/sources");
+    },
+    onError: (error) => {
+      toast.error("수정 실패", error.message);
+    },
+  });
+
+  const isLoadingSubmitting = isCreating || isUpdating;
+
+  const onInvalidSubmit = () => {
+    toast.error("입력 오류", "필수 항목을 모두 올바르게 입력해주세요.");
+  };
+
+  const onSubmit = (values: SourceFormValues) => {
+    // Map Form values to DB structure
+    const dbData = {
+      country: values.country as Country,
+      name: values.name,
+      url: values.url,
+      category: types.length > 0 ? types : null, // Store as JSONB array
+      prompt: values.parsingPrompt || null,
+      frequency:
+        values.cycle === "일주일"
+          ? 7
+          : values.cycle === "월간"
+            ? 30
+            : values.cycle === "분기"
+              ? 90
+              : 1,
+      is_live: values.status === "수집함",
+      actions: (values.actions || []).map((a, i) => ({
+        type: a.type.toLowerCase(),
+        value: a.value,
+        sequence: i + 1,
+      })),
+      article_class: values.articleClass || null,
+      content_class: values.contentClass && values.contentClass.value
+        ? [
+            {
+              type: values.contentClass.type.toLowerCase(),
+              value: values.contentClass.value,
+              sequence: 1,
+            },
+          ]
+        : null,
+      source_id: initialData?.source_id || null,
+      memo: values.description || null,
+    };
+
+    if (isEdit && initialData?.id) {
+      updateSource({ id: initialData.id, updates: dbData });
+    } else {
+      createSource(dbData);
+    }
   };
 
   return (
     <div className="w-full">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-8">
           <div className="bg-white rounded-[2rem]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 items-start">
-
               {/* Row: ID & Registered Date & Last Collected (Only in Edit Mode) */}
               {isEdit && (
                 <>
@@ -178,19 +416,30 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <FormLabel className="text-base font-bold text-gray-800 ml-1 flex items-center gap-2">
                       <Globe className="w-4 h-4 text-primary-500" /> 국가
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full h-16 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
                           <SelectValue placeholder="국가 선택" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
-                        <SelectItem value="대한민국" className="py-3 text-base">대한민국</SelectItem>
-                        {COUNTRIES.filter(c => c !== "대한민국").map((country) => (
-                          <SelectItem key={country} value={country} className="py-3 text-base">
-                            {country}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                        <SelectItem value="대한민국" className="py-3 text-base">
+                          대한민국
+                        </SelectItem>
+                        {COUNTRIES.filter((c) => c !== "대한민국").map(
+                          (country) => (
+                            <SelectItem
+                              key={country}
+                              value={country}
+                              className="py-3 text-base"
+                            >
+                              {country}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-xs font-medium" />
@@ -223,7 +472,9 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">URL</FormLabel>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                      URL
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="https://example.com"
@@ -238,9 +489,11 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
               <FormField
                 control={form.control}
                 name="type"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">유형</FormLabel>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                      유형
+                    </FormLabel>
                     <div className="space-y-3">
                       <Select onValueChange={handleTypeSelect}>
                         <FormControl>
@@ -250,16 +503,28 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         </FormControl>
                         <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
                           {isCategoriesLoading ? (
-                            <SelectItem value="_loading" disabled className="py-3 text-base text-gray-400">
+                            <SelectItem
+                              value="_loading"
+                              disabled
+                              className="py-3 text-base text-gray-400"
+                            >
                               로딩 중...
                             </SelectItem>
                           ) : categories.length === 0 ? (
-                            <SelectItem value="_empty" disabled className="py-3 text-base text-gray-400">
+                            <SelectItem
+                              value="_empty"
+                              disabled
+                              className="py-3 text-base text-gray-400"
+                            >
                               등록된 유형이 없습니다
                             </SelectItem>
                           ) : (
                             categories.map((cat) => (
-                              <SelectItem key={cat.id} value={cat.name} className="py-3 text-base">
+                              <SelectItem
+                                key={cat.id}
+                                value={cat.name}
+                                className="py-3 text-base"
+                              >
                                 {cat.name}
                               </SelectItem>
                             ))
@@ -267,8 +532,9 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-gray-400 ml-1 leading-relaxed">
-                        해당 정보원의 매체 성격을 선택해 주세요. (예: 뉴스, 블로그, 카페 등)
-                        여러 개의 유형을 선택하여 추가할 수 있습니다.
+                        해당 정보원의 매체 성격을 선택해 주세요. (예: 뉴스,
+                        블로그, 카페 등) 여러 개의 유형을 선택하여 추가할 수
+                        있습니다.
                       </p>
                       {types.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -302,7 +568,9 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 name="cycle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">수집 주기</FormLabel>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                      수집 주기
+                    </FormLabel>
                     <FormControl>
                       <Input
                         disabled
@@ -320,16 +588,25 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">상태</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                      상태
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full h-16 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
                           <SelectValue placeholder="상태 선택" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                        <SelectItem value="수집중" className="py-3 text-base">수집중</SelectItem>
-                        <SelectItem value="대기" className="py-3 text-base">대기</SelectItem>
+                        <SelectItem value="수집함" className="py-3 text-base">
+                          수집함
+                        </SelectItem>
+                        <SelectItem value="수집안함" className="py-3 text-base">
+                          수집안함
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-xs font-medium" />
@@ -341,7 +618,9 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 name="description"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 pt-4">
-                    <FormLabel className="text-base font-bold text-gray-800 ml-1">메모 및 상세 설명</FormLabel>
+                    <FormLabel className="text-base font-bold text-gray-800 ml-1">
+                      메모 및 상세 설명
+                    </FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="해당 정보원에 대한 간략한 설명을 입력하세요."
@@ -354,41 +633,61 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 )}
               />
 
-
               {/* Row: Actions (Pagination Settings) */}
               <div className="md:col-span-2 space-y-4 pt-4 border-t border-gray-100 mt-4">
                 <div className="flex flex-col gap-1">
                   <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
-                    <ListOrdered className="w-5 h-5 text-primary-500" /> 동작 설정 (Actions)
+                    <ListOrdered className="w-5 h-5 text-primary-500" /> 동작
+                    설정 (Actions)
                   </FormLabel>
                   <p className="text-xs text-gray-400 ml-1">
-                    페이지네이션 클릭 등 순차적으로 수행할 동작의 XPath 또는 CSS 선택자를 입력하세요.
+                    페이지네이션 클릭 등 순차적으로 수행할 동작의 XPath 또는 CSS
+                    선택자를 입력하세요.
                   </p>
                 </div>
 
                 <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 flex flex-col md:flex-row items-end gap-3">
                   <div className="flex-shrink-0 w-full md:w-32 space-y-2">
-                    <label className="text-xs font-bold text-gray-500 ml-1">유형</label>
+                    <label className="text-xs font-bold text-gray-500 ml-1">
+                      유형
+                    </label>
                     <Select
                       value={currentActionType}
-                      onValueChange={(v: "XPath" | "CSS") => setCurrentActionType(v)}
+                      onValueChange={(v: "XPath" | "CSS") =>
+                        setCurrentActionType(v)
+                      }
                     >
                       <SelectTrigger className="h-14 bg-white rounded-xl border-none shadow-sm font-bold">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-gray-100 shadow-xl">
-                        <SelectItem value="XPath" className="font-medium">XPath</SelectItem>
-                        <SelectItem value="CSS" className="font-medium">CSS</SelectItem>
+                        <SelectItem value="XPath" className="font-medium">
+                          XPath
+                        </SelectItem>
+                        <SelectItem value="CSS" className="font-medium">
+                          CSS
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex-grow w-full space-y-2">
-                    <label className="text-xs font-bold text-gray-500 ml-1">선택자 값 (Selector)</label>
+                    <label className="text-xs font-bold text-gray-500 ml-1">
+                      선택자 값 (Selector)
+                    </label>
                     <Input
-                      placeholder={currentActionType === "XPath" ? "//button[@title='Next']" : ".pagination-next"}
+                      placeholder={
+                        currentActionType === "XPath"
+                          ? "//button[@title='Next']"
+                          : ".pagination-next"
+                      }
                       value={currentActionValue}
                       onChange={(e) => setCurrentActionValue(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addAction(); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addAction();
+                        }
+                      }}
                       className="h-14 bg-white rounded-xl border-none shadow-sm text-base font-medium"
                     />
                   </div>
@@ -432,40 +731,165 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                 )}
                 {actions.length === 0 && (
                   <div className="py-8 text-center border-2 border-dashed border-gray-100 rounded-[1.5rem]">
-                    <p className="text-sm text-gray-300 font-medium italic">등록된 동작이 없습니다.</p>
+                    <p className="text-sm text-gray-300 font-medium italic">
+                      등록된 동작이 없습니다.
+                    </p>
                   </div>
                 )}
-              </div>
 
-              {/* Parsing Prompt */}
-              <FormField
-                control={form.control}
-                name="parsingPrompt"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2 pt-6 border-t border-gray-100 mt-6">
-                    <div className="flex flex-col gap-1 mb-4">
-                      <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
-                        <Brain className="w-5 h-5 text-primary-500" /> 상세페이지 파싱 프롬프트
-                      </FormLabel>
-                      <p className="text-xs text-gray-400 ml-1 leading-relaxed">
-                        상세페이지의 본문, 제목, 날짜 등을 추출하기 위한 AI 프롬프트를 설정합니다.<br />
-                        추출해야 할 데이터 필드와 파싱 규칙을 명확하게 입력해 주세요.
-                      </p>
+                {/* Article Class Settings */}
+                <div className="md:col-span-2 space-y-4 pt-6 border-t border-gray-100 mt-6">
+                  <div className="flex flex-col gap-1">
+                    <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
+                      <Hash className="w-5 h-5 text-primary-500" /> 아티클
+                      클래스 설정 (Article Class)
+                    </FormLabel>
+                    <p className="text-xs text-gray-400 ml-1">
+                      아티클(게시물)을 식별하기 위한 CSS 클래스 이름을
+                      입력하세요.
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 flex flex-col md:flex-row items-end gap-3">
+                    <div className="flex-shrink-0 w-full md:w-32 space-y-2">
+                      <label className="text-xs font-bold text-gray-500 ml-1">
+                        유형
+                      </label>
+                      <Select value="CSS" disabled>
+                        <SelectTrigger className="h-14 bg-white rounded-xl border-none shadow-sm font-bold">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                          <SelectItem value="CSS" className="font-medium">
+                            CSS Class
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <FormControl>
-                      <Textarea
-                        placeholder="예: 아래 HTML 구조에서 뉴스 제목은 h1.title, 본문은 div.content 내의 모든 p 태그입니다. 날짜는 span.date에서 YYYY-MM-DD 형식으로 추출해줘."
-                        className="min-h-[180px] rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all p-6 text-lg font-medium leading-relaxed"
-                        {...field}
+                    <div className="flex-grow w-full space-y-2">
+                      <label className="text-xs font-bold text-gray-500 ml-1">
+                        클래스 이름 (Class Name)
+                      </label>
+                      <FormField
+                        control={form.control}
+                        name="articleClass"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="예: article, post, news-item"
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                className="h-14 bg-white rounded-xl border-none shadow-sm text-base font-medium"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-xs font-medium" />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage className="text-xs font-medium" />
-                  </FormItem>
-                )}
-              />
+                    </div>
+                  </div>
+                </div>
 
-              {/* Description */}
+                {/* Content Class Settings */}
+                <div className="md:col-span-2 space-y-4 pt-6 border-t border-gray-100 mt-6">
+                  <div className="flex flex-col gap-1">
+                    <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
+                      <Box className="w-5 h-5 text-primary-500" /> 컨텐츠 영역
+                      설정 (Content Class)
+                    </FormLabel>
+                    <p className="text-xs text-gray-400 ml-1">
+                      상세페이지에서 본문 내용이 위치한 영역의 XPath 또는 CSS
+                      선택자를 입력하세요.
+                    </p>
+                  </div>
 
+                  <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 flex flex-col md:flex-row items-end gap-3">
+                    <div className="flex-shrink-0 w-full md:w-32 space-y-2">
+                      <label className="text-xs font-bold text-gray-500 ml-1">
+                        유형
+                      </label>
+                      <Select
+                        value={contentClassType}
+                        onValueChange={(v: "XPath" | "CSS") => {
+                          setContentClassType(v);
+                          form.setValue("contentClass", {
+                            type: v,
+                            value: contentClassValue,
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="h-14 bg-white rounded-xl border-none shadow-sm font-bold">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                          <SelectItem value="XPath" className="font-medium">
+                            XPath
+                          </SelectItem>
+                          <SelectItem value="CSS" className="font-medium">
+                            CSS
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-grow w-full space-y-2">
+                      <label className="text-xs font-bold text-gray-500 ml-1">
+                        선택자 값 (Selector)
+                      </label>
+                      <Input
+                        placeholder={
+                          contentClassType === "XPath"
+                            ? "//div[@class='article-content']"
+                            : ".article-content"
+                        }
+                        value={contentClassValue}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          setContentClassValue(newValue);
+                          form.setValue("contentClass", {
+                            type: contentClassType,
+                            value: newValue,
+                          });
+                        }}
+                        className="h-14 bg-white rounded-xl border-none shadow-sm text-base font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Parsing Prompt */}
+                <FormField
+                  control={form.control}
+                  name="parsingPrompt"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2 pt-6 border-t border-gray-100 mt-6">
+                      <div className="flex flex-col gap-1 mb-4">
+                        <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
+                          <Brain className="w-5 h-5 text-primary-500" />{" "}
+                          상세페이지 파싱 프롬프트
+                        </FormLabel>
+                        <p className="text-xs text-gray-400 ml-1 leading-relaxed">
+                          상세페이지의 본문, 제목, 날짜 등을 추출하기 위한 AI
+                          프롬프트를 설정합니다.
+                          <br />
+                          추출해야 할 데이터 필드와 파싱 규칙을 명확하게 입력해
+                          주세요.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Textarea
+                          placeholder="예: 아래 HTML 구조에서 뉴스 제목은 h1.title, 본문은 div.content 내의 모든 p 태그입니다. 날짜는 span.date에서 YYYY-MM-DD 형식으로 추출해줘."
+                          className="min-h-[180px] rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all p-6 text-lg font-medium leading-relaxed"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs font-medium" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Description */}
+              </div>
             </div>
           </div>
 
@@ -492,9 +916,16 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
               </Button>
               <Button
                 type="submit"
-                className="h-16 w-40 rounded-[1.5rem] bg-primary-500 hover:bg-primary-600 text-white shadow-xl shadow-primary-500/20 font-bold text-lg transition-all active:scale-[0.98]"
+                disabled={isLoadingSubmitting}
+                className="h-16 w-40 rounded-[1.5rem] bg-primary-500 hover:bg-primary-600 text-white shadow-xl shadow-primary-500/20 font-bold text-lg transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                {isEdit ? "수정" : "등록"}
+                {isLoadingSubmitting ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : isEdit ? (
+                  "수정"
+                ) : (
+                  "등록"
+                )}
               </Button>
             </div>
           </div>

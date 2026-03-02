@@ -1,44 +1,70 @@
+"use client";
+
 import React from "react";
+import { useParams, useRouter } from "next/navigation";
 import { SourceForm } from "@/components/sources/SourceForm";
+import { useSourceDetail } from "@/components/hooks/sources/queries";
+import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-// Mock fetching function (In reality, this would use the project_id from params)
-async function getSourceData(id: string) {
-  // Demo mock data
-  return {
-    id: id,
-    country: "대한민국",
-    name: "네이버 뉴스",
-    url: "https://news.naver.com",
-    type: "뉴스",
-    cycle: "1시간",
-    status: "수집중",
-    last_collected: "24/01/26 10:00",
-    created_at: "24/01/01",
-    description: "네이버 뉴스 헤드라인 및 주요 기사 수집용 소스입니다.",
-  };
-}
+export default function SourceDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const idStr = params?.id as string;
+  const id = idStr ? parseInt(idStr, 10) : null;
 
-export async function generateStaticParams() {
-  return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }];
-}
+  const { data: source, isLoading, error } = useSourceDetail(id as number);
 
-interface EditSourcePageProps {
-  params: Promise<{ id: string }>;
-}
+  // Mapping DB data to Form values
+  const initialData = source ?? undefined;
 
-export default async function EditSourcePage({ params }: EditSourcePageProps) {
-  const { id } = await params;
-  const initialData = await getSourceData(id);
+  if (isLoading) {
+    return (
+      <div className="flex h-[600px] w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+          <p className="text-gray-500 font-medium">정보원 정보를 불러오는 중입니다...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !id || isNaN(id) || !source) {
+    return (
+      <div className="flex h-[600px] w-full flex-col items-center justify-center gap-6 p-8 text-center text-gray-800">
+        <div className="rounded-full bg-red-50 p-6">
+          <AlertCircle className="h-12 w-12 text-red-500" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black tracking-tight">데이터를 불러오지 못했습니다</h2>
+          <p className="text-gray-500 font-medium leading-relaxed">
+            해당 정보원 정보를 찾을 수 없거나,<br />
+            데이터베이스 연결에 문제가 발생했습니다.
+          </p>
+          {error && <p className="text-xs text-red-400 mt-2 font-mono">Error: {error.message}</p>}
+        </div>
+
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 w-full ">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">정보원 상세</h1>
-        <p className="text-gray-500 text-lg">
-          정보원 ID: <span className="text-primary-600 font-mono font-bold">#{id}</span>의 정보를 수정합니다.
-        </p>
+    <div className="p-8 w-full">
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">정보원 상세 정보</h1>
+          <p className="text-gray-500 text-lg">
+            등록된 정보원(<span className="font-bold text-primary-600">ID #{source.id}</span>)의 수집 설정 및 상세 규칙을 관리합니다.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+
+        </div>
       </div>
-      <SourceForm initialData={initialData} isEdit={true} />
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 overflow-hidden ring-1 ring-black/5">
+        <SourceForm initialData={initialData} isEdit={true} />
+      </div>
     </div>
   );
 }

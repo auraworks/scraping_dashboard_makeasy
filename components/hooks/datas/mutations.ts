@@ -25,7 +25,7 @@ export function useCreateData(
 // Update Data Mutation
 export function useUpdateData(
   options?: Omit<
-    UseMutationOptions<Data, ApiError, { id: string; updates: Partial<Omit<Data, "id" | "created_at">> }>,
+    UseMutationOptions<Data, ApiError, { id: number; updates: Partial<Omit<Data, "id" | "created_at">> }>,
     "mutationFn" | "onSuccess"
   >
 ) {
@@ -44,7 +44,7 @@ export function useUpdateData(
 // Delete Data Mutation
 export function useDeleteData(
   options?: Omit<
-    UseMutationOptions<void, ApiError, string>,
+    UseMutationOptions<void, ApiError, number>,
     "mutationFn" | "onSuccess"
   >
 ) {
