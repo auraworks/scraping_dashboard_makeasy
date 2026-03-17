@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
+  const failOnly = searchParams.get("failOnly") === "true";
   const page = Number(searchParams.get("page") || 1);
   const pageSize = Number(searchParams.get("pageSize") || 10);
   const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
@@ -28,6 +29,10 @@ export async function GET(request: Request) {
 
   if (search) {
     query = query.or(`message.ilike.%${search}%,url.ilike.%${search}%`);
+  }
+
+  if (failOnly) {
+    query = query.in("level", ["error", "failure"]);
   }
 
   const { data, error, count } = await query.range(from, to);

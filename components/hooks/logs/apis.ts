@@ -8,6 +8,7 @@ export async function getLogs(
   if (filters?.search) params.set("search", filters.search);
   if (filters?.page) params.set("page", String(filters.page));
   if (filters?.pageSize) params.set("pageSize", String(filters.pageSize));
+  if (filters?.failOnly) params.set("failOnly", "true");
 
   const response = await fetch(`/api/logs?${params.toString()}`);
 

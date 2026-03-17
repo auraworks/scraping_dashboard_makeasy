@@ -3,6 +3,8 @@
 import React from "react";
 import { Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -20,6 +22,7 @@ export default function LogsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [page, setPage] = React.useState(1);
+  const [failOnly, setFailOnly] = React.useState(false);
 
   const {
     data: logsData,
@@ -29,6 +32,7 @@ export default function LogsPage() {
     search: searchTerm || undefined,
     page,
     pageSize: 10,
+    failOnly: failOnly || undefined,
   });
 
   const logs = logsData?.data || [];
@@ -51,6 +55,11 @@ export default function LogsPage() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    setPage(1);
+  };
+
+  const handleFailOnlyChange = (checked: boolean) => {
+    setFailOnly(checked);
     setPage(1);
   };
 
@@ -80,6 +89,20 @@ export default function LogsPage() {
               onChange={(event) => handleSearch(event.target.value)}
               className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:border-primary-500 transition-all shadow-sm"
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="failOnly"
+              checked={failOnly}
+              onCheckedChange={(checked) => handleFailOnlyChange(checked === true)}
+              className="border-gray-300 data-[state=checked]:bg-primary-900 data-[state=checked]:border-primary-900"
+            />
+            <Label
+              htmlFor="failOnly"
+              className="text-sm font-medium text-gray-600 cursor-pointer select-none"
+            >
+              실패 항목만 보기
+            </Label>
           </div>
         </div>
 
