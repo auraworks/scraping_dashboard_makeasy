@@ -21,10 +21,11 @@ export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "대시보드", href: "/dashboard" },
     { id: "sources", label: "정보원 관리", href: "/sources" },
-    
+
     { id: "data", label: "데이터 관리", href: "/data" },
     { id: "categories", label: "유형 관리", href: "/categories" },
     { id: "logs", label: "로그 관리", href: "/logs" },
+    { id: "settings", label: "시스템 설정", href: "/settings" },
   ];
 
   const authPages = [

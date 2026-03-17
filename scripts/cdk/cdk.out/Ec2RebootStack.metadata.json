@@ -1,0 +1,50 @@
+{
+  "/Ec2RebootStack/FunctionName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FunctionName"
+    }
+  ],
+  "/Ec2RebootStack/FunctionArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FunctionArn"
+    }
+  ],
+  "/Ec2RebootStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/Ec2RebootStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/Ec2RebootStack/Ec2RebootLambdaRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Ec2RebootLambdaRole0615537C"
+    }
+  ],
+  "/Ec2RebootStack/Ec2RebootFunction/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Ec2RebootFunctionABD88DAF"
+    }
+  ],
+  "/Ec2RebootStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/Ec2RebootStack/Ec2RebootLambdaRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Ec2RebootLambdaRoleDefaultPolicyE0AF2BCB"
+    }
+  ]
+}

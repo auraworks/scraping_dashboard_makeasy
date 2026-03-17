@@ -1,0 +1,36 @@
+{
+  "version": "52.0.0",
+  "files": {
+    "47dcefa15271f0d5a4f984851c52013da670cc6742b912af3f111a1c7a1ebf44": {
+      "displayName": "Ec2RebootFunction/Code",
+      "source": {
+        "path": "asset.47dcefa15271f0d5a4f984851c52013da670cc6742b912af3f111a1c7a1ebf44",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-ap-northeast-2-1794ffff": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-ap-northeast-2",
+          "objectKey": "47dcefa15271f0d5a4f984851c52013da670cc6742b912af3f111a1c7a1ebf44.zip",
+          "region": "ap-northeast-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-ap-northeast-2"
+        }
+      }
+    },
+    "a93a6a3e71a069de2f36bd49366607928ebd70bc13ff662b31f3607eb33a0268": {
+      "displayName": "Ec2RebootStack Template",
+      "source": {
+        "path": "Ec2RebootStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-ap-northeast-2-b63360e9": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-ap-northeast-2",
+          "objectKey": "a93a6a3e71a069de2f36bd49366607928ebd70bc13ff662b31f3607eb33a0268.json",
+          "region": "ap-northeast-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-ap-northeast-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

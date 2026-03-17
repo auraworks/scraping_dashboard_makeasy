@@ -125,29 +125,30 @@ const COUNTRIES = [
   "홍콩",
 ].sort((a, b) => a.localeCompare(b, "ko"));
 
-const actionSchema = z.object({
-  type: z.enum(["XPath", "CSS"]),
-  value: z.string().min(1, "값을 입력해주세요."),
-});
-
+// Zod 스키마 - actions는 form에서 관리하지 않음 (별도 state 사용)
 const sourceSchema = z.object({
   country: z.string().min(1, "국가를 선택해주세요."),
   name: z.string().min(1, "정보원명을 입력해주세요."),
   url: z.string().min(1, "URL을 입력해주세요."),
-  type: z.string(), // category는 선택 사항 (null 허용)
+  type: z.string(),
   cycle: z.string(),
   status: z.string().min(1, "상태를 선택해주세요."),
-  actions: z.array(actionSchema).optional(),
   parsingPrompt: z.string().optional(),
-  description: z.string().optional(), // Maps to memo in DB
-  articleClass: z.string().optional(), // Maps to article_class in DB
+  description: z.string().optional(),
+  articleClass: z.string().optional(),
   contentClass: z
     .object({ type: z.enum(["XPath", "CSS"]), value: z.string() })
     .optional()
-    .nullable(), // Maps to content_class in DB
+    .nullable(),
 });
 
 type SourceFormValues = z.infer<typeof sourceSchema>;
+
+// Action 타입 정의
+interface Action {
+  type: "XPath" | "CSS";
+  value: string;
+}
 
 interface SourceFormProps {
   initialData?: {
@@ -155,7 +156,7 @@ interface SourceFormProps {
     country?: Country | null;
     name?: string | null;
     url?: string | null;
-    category?: string[] | null; // JSONB array
+    category?: string[] | null;
     type?: string;
     frequency?: number | null;
     is_live?: boolean | null;
@@ -184,13 +185,11 @@ import {
   Brain,
 } from "lucide-react";
 
-// DB는 "xpath"/"css" 소문자로 저장하므로, 로드 시 폼 enum 형식으로 정규화
+// DB 데이터를 UI 형식으로 변환하는 함수들
 const normalizeType = (t: string): "XPath" | "CSS" =>
   t?.toLowerCase() === "css" ? "CSS" : "XPath";
 
-const normalizeActions = (
-  raw: unknown,
-): { type: "XPath" | "CSS"; value: string }[] => {
+const parseActionsFromDB = (raw: unknown): Action[] => {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter((a) => a && typeof a === "object" && "value" in a)
@@ -200,12 +199,12 @@ const normalizeActions = (
     }));
 };
 
-const normalizeContentClass = (
+const parseContentClassFromDB = (
   raw: unknown,
-): { type: "XPath" | "CSS"; value: string } | undefined => {
+): { type: "XPath" | "CSS"; value: string } | null => {
   const arr = Array.isArray(raw) ? raw : null;
   const first = arr?.[0];
-  if (!first || typeof first !== "object" || !("value" in first)) return undefined;
+  if (!first || typeof first !== "object" || !("value" in first)) return null;
   return {
     type: normalizeType((first as { type: string }).type),
     value: (first as { value: string }).value,
@@ -216,25 +215,44 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const router = useRouter();
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useCategories();
+
+  // ========== 독립 State 관리 (form과 분리) ==========
+  // types: 카테고리 배열
   const [types, setTypes] = React.useState<string[]>(
     initialData?.category || [],
   );
 
-  // Actions state for UI — DB 소문자 타입을 정규화하여 초기화
-  const [actions, setActions] = React.useState<
-    { type: "XPath" | "CSS"; value: string }[]
-  >(normalizeActions(initialData?.actions));
+  // actions: 동작 설정 배열
+  const [actions, setActions] = React.useState<Action[]>(() =>
+    parseActionsFromDB(initialData?.actions),
+  );
+
+  // contentClass: 컨텐츠 영역 설정
+  const [contentClass, setContentClass] = React.useState<{
+    type: "XPath" | "CSS";
+    value: string;
+  } | null>(() => parseContentClassFromDB(initialData?.content_class));
+
+  // 현재 입력 중인 action 값
   const [currentActionType, setCurrentActionType] = React.useState<
     "XPath" | "CSS"
   >("XPath");
   const [currentActionValue, setCurrentActionValue] = React.useState("");
 
-  // Content Class state for UI
-  const [contentClassType, setContentClassType] = React.useState<
-    "XPath" | "CSS"
-  >("XPath");
-  const [contentClassValue, setContentClassValue] = React.useState("");
+  // ========== initialData 변경 시 state 동기화 ==========
+  React.useEffect(() => {
+    if (initialData) {
+      setTypes(initialData.category || []);
+      setActions(parseActionsFromDB(initialData.actions));
+      const cc = parseContentClassFromDB(initialData.content_class);
+      setContentClass(cc);
+      if (cc) {
+        setCurrentActionType(cc.type);
+      }
+    }
+  }, [initialData]);
 
+  // ========== React Hook Form ==========
   const form = useForm<SourceFormValues>({
     resolver: zodResolver(sourceSchema),
     defaultValues: {
@@ -244,56 +262,47 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
       type: initialData?.category?.join(", ") ?? "",
       cycle: initialData?.frequency?.toString() ?? "",
       status: initialData?.is_live === true ? "수집함" : "수집안함",
-      actions: normalizeActions(initialData?.actions),
       parsingPrompt: initialData?.prompt ?? "",
       description: initialData?.memo ?? "",
       articleClass: initialData?.article_class ?? "",
-      contentClass: normalizeContentClass(initialData?.content_class),
+      contentClass: parseContentClassFromDB(initialData?.content_class),
     },
   });
 
+  // ========== 핸들러 함수들 ==========
   const handleTypeSelect = (value: string) => {
     if (value && !types.includes(value)) {
-      const newTypes = [...types, value];
-      setTypes(newTypes);
-      form.setValue("type", newTypes.join(", "), { shouldValidate: true });
+      setTypes([...types, value]);
     }
   };
 
   const removeType = (typeToRemove: string) => {
-    const newTypes = types.filter((t) => t !== typeToRemove);
-    setTypes(newTypes);
-    form.setValue("type", newTypes.join(", "), { shouldValidate: true });
+    setTypes(types.filter((t) => t !== typeToRemove));
   };
 
   const addAction = () => {
     if (currentActionValue.trim()) {
-      const newAction = {
-        type: currentActionType,
-        value: currentActionValue.trim(),
-      };
-      const newActions = [...actions, newAction];
-      setActions(newActions);
-      form.setValue("actions", newActions, { shouldValidate: true });
+      setActions([
+        ...actions,
+        { type: currentActionType, value: currentActionValue.trim() },
+      ]);
       setCurrentActionValue("");
     }
   };
 
   const removeAction = (index: number) => {
-    const newActions = actions.filter((_, i) => i !== index);
-    setActions(newActions);
-    form.setValue("actions", newActions, { shouldValidate: true });
+    setActions(actions.filter((_, i) => i !== index));
   };
 
-  // Initialize content class UI state from initialData
-  React.useEffect(() => {
-    const normalized = normalizeContentClass(initialData?.content_class);
-    if (normalized) {
-      setContentClassType(normalized.type);
-      setContentClassValue(normalized.value);
+  const updateContentClass = (type: "XPath" | "CSS", value: string) => {
+    if (value.trim()) {
+      setContentClass({ type, value: value.trim() });
+    } else {
+      setContentClass(null);
     }
-  }, [initialData]);
+  };
 
+  // ========== Mutations ==========
   const toast = useToast();
 
   const { mutate: createSource, isPending: isCreating } = useCreateSource({
@@ -318,17 +327,18 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
 
   const isLoadingSubmitting = isCreating || isUpdating;
 
+  // ========== 폼 제출 ==========
   const onInvalidSubmit = () => {
     toast.error("입력 오류", "필수 항목을 모두 올바르게 입력해주세요.");
   };
 
   const onSubmit = (values: SourceFormValues) => {
-    // Map Form values to DB structure
+    // DB 전송용 데이터 구성 - state 값을 직접 사용
     const dbData = {
       country: values.country as Country,
       name: values.name,
       url: values.url,
-      category: types.length > 0 ? types : null, // Store as JSONB array
+      category: types.length > 0 ? types : null,
       prompt: values.parsingPrompt || null,
       frequency:
         values.cycle === "일주일"
@@ -339,17 +349,22 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
               ? 90
               : 1,
       is_live: values.status === "수집함",
-      actions: (values.actions || []).map((a, i) => ({
-        type: a.type.toLowerCase(),
-        value: a.value,
-        sequence: i + 1,
-      })),
+      // actions state를 직접 사용
+      actions:
+        actions.length > 0
+          ? actions.map((a, i) => ({
+              type: a.type.toLowerCase(),
+              value: a.value,
+              sequence: i + 1,
+            }))
+          : [],
       article_class: values.articleClass || null,
-      content_class: values.contentClass && values.contentClass.value
+      // contentClass state를 직접 사용
+      content_class: contentClass
         ? [
             {
-              type: values.contentClass.type.toLowerCase(),
-              value: values.contentClass.value,
+              type: contentClass.type.toLowerCase(),
+              value: contentClass.value,
               sequence: 1,
             },
           ]
@@ -357,6 +372,13 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
       source_id: initialData?.source_id || null,
       memo: values.description || null,
     };
+
+    console.log("=== SUBMIT DEBUG ===");
+    console.log("actions state:", actions);
+    console.log("contentClass state:", contentClass);
+    console.log("dbData.actions:", dbData.actions);
+    console.log("dbData.content_class:", dbData.content_class);
+    console.log("====================");
 
     if (isEdit && initialData?.id) {
       updateSource({ id: initialData.id, updates: dbData });
@@ -368,7 +390,10 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   return (
     <div className="w-full">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
+          className="space-y-8"
+        >
           <div className="bg-white rounded-[2rem]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 items-start">
               {/* Row: ID & Registered Date & Last Collected (Only in Edit Mode) */}
@@ -416,10 +441,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <FormLabel className="text-base font-bold text-gray-800 ml-1 flex items-center gap-2">
                       <Globe className="w-4 h-4 text-primary-500" /> 국가
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full h-16 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
                           <SelectValue placeholder="국가 선택" />
@@ -591,10 +613,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <FormLabel className="text-base font-bold text-gray-800 ml-1">
                       상태
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full h-16 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
                           <SelectValue placeholder="상태 선택" />
@@ -706,7 +725,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                   <div className="space-y-3 pt-2">
                     {actions.map((action, index) => (
                       <div
-                        key={index}
+                        key={`${action.type}-${action.value}-${index}`}
                         className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all animate-in fade-in slide-in-from-top-2"
                       >
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-bold font-mono">
@@ -810,14 +829,10 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         유형
                       </label>
                       <Select
-                        value={contentClassType}
-                        onValueChange={(v: "XPath" | "CSS") => {
-                          setContentClassType(v);
-                          form.setValue("contentClass", {
-                            type: v,
-                            value: contentClassValue,
-                          });
-                        }}
+                        value={contentClass?.type || "XPath"}
+                        onValueChange={(v: "XPath" | "CSS") =>
+                          updateContentClass(v, contentClass?.value || "")
+                        }
                       >
                         <SelectTrigger className="h-14 bg-white rounded-xl border-none shadow-sm font-bold">
                           <SelectValue />
@@ -838,19 +853,17 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                       </label>
                       <Input
                         placeholder={
-                          contentClassType === "XPath"
+                          contentClass?.type === "XPath"
                             ? "//div[@class='article-content']"
                             : ".article-content"
                         }
-                        value={contentClassValue}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          setContentClassValue(newValue);
-                          form.setValue("contentClass", {
-                            type: contentClassType,
-                            value: newValue,
-                          });
-                        }}
+                        value={contentClass?.value || ""}
+                        onChange={(e) =>
+                          updateContentClass(
+                            contentClass?.type || "XPath",
+                            e.target.value,
+                          )
+                        }
                         className="h-14 bg-white rounded-xl border-none shadow-sm text-base font-medium"
                       />
                     </div>
@@ -887,8 +900,6 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     </FormItem>
                   )}
                 />
-
-                {/* Description */}
               </div>
             </div>
           </div>
