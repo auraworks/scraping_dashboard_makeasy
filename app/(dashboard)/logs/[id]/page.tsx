@@ -8,80 +8,68 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { IoMenu } from "react-icons/io5";
-import { CheckCircle2, XCircle, Clock, Globe, Database } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Globe, Loader2 } from "lucide-react";
+import { useLogDetail } from "@/components/hooks";
 
 export default function LogDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id;
+  const id = params.id as string;
 
-  // Mock Data (matches the one in logs/page.tsx)
-  const logs = [
-    {
-      id: 1,
-      sourceName: "네이버 뉴스",
-      url: "https://news.naver.com",
-      timestamp: "2024/01/26 10:00:01",
-      result: "SUCCESS",
-      details: "총 15건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 2,
-      sourceName: "인스타그램",
-      url: "https://instagram.com/explore/tags/trend",
-      timestamp: "2024/01/26 10:05:42",
-      result: "SUCCESS",
-      details: "총 42건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 3,
-      sourceName: "다음 뉴스",
-      url: "https://news.daum.net",
-      timestamp: "2024/01/26 10:10:15",
-      result: "FAILURE",
-      details: "수집 실패",
-      errorLog: "TimeoutError: Page load exceeded 30s\n  at navigate (puppeteer/lib/FrameManager.js:120:13)\n  at processTicksAndRejections (internal/process/task_queues.js:95:5)\n  -- ASYNC --\n  at Frame.<anonymous> (puppeteer/lib/helper.js:111:15)\n  at Page.goto (puppeteer/lib/Page.js:629:49)",
-    },
-    {
-      id: 4,
-      sourceName: "테크미디어",
-      url: "https://techmedia.jp/news",
-      timestamp: "2024/01/26 10:15:00",
-      result: "SUCCESS",
-      details: "총 8건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 5,
-      sourceName: "Reddit",
-      url: "https://reddit.com/r/technology",
-      timestamp: "2024/01/26 10:20:22",
-      result: "SUCCESS",
-      details: "총 25건 데이터 수집 완료",
-      errorLog: "-",
-    },
-    {
-      id: 6,
-      sourceName: "필리핀 커뮤니티",
-      url: "https://philippine-forum.com",
-      timestamp: "2024/01/26 10:25:11",
-      result: "FAILURE",
-      details: "수집 실패",
-      errorLog: "ProxyError: Could not connect to Manila relay node\n  at ProxyManager.getConnection (services/ProxyManager.ts:45:11)\n  at Crawler.fetch (services/Crawler.ts:88:32)\n  at async Crawler.run (services/Crawler.ts:120:5)",
-    },
-  ];
+  const { data: log, isLoading, error } = useLogDetail(id);
 
-  const log = logs.find((l) => l.id.toString() === id);
-
-  if (!log) {
+  if (isLoading) {
     return (
       <div className="p-8 w-full flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-gray-500 mb-4">존재하지 않는 로그입니다.</p>
-        <Button onClick={() => router.push("/logs")}>목록으로 돌아가기</Button>
+        <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+        <p className="text-gray-400 font-medium">로그 정보를 불러오는 중...</p>
       </div>
     );
+  }
+
+  if (error || !log) {
+    return (
+      <div className="p-8 w-full flex flex-col items-center justify-center min-h-[400px]">
+        <XCircle className="w-12 h-12 text-rose-500 mb-4" />
+        <p className="text-gray-500 mb-4 font-medium">존재하지 않거나 불러올 수 없는 로그입니다.</p>
+        <Button onClick={() => router.push("/logs")} className="rounded-xl">목록으로 돌아가기</Button>
+      </div>
+    );
+  }
+
+  const level = log.level?.toLowerCase() || "";
+  const isSuccess = level !== "error" && level !== "failure";
+  const sourceName = log.sources?.name || `#${log.source_id ?? "-"}`;
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  };
+
+  // Convert details JSON to formatted string if it exists
+  const detailsString = log.details ? JSON.stringify(log.details, null, 2) : "-";
+
+  // Choose what to show in "상세 에러 로그"
+  // If FAIL, show message. If message looks like a JSON string, try to parse it.
+  let displayError = log.message || "-";
+  if (!isSuccess && log.message) {
+    try {
+      // If it's a stringified JSON (common in these logs), make it pretty
+      if (log.message.includes("{") && log.message.includes("}")) {
+        const potentialJson = log.message.substring(log.message.indexOf("{"));
+        const parsed = JSON.parse(potentialJson.replace(/'/g, '"'));
+        displayError = `${log.message.split("{")[0]}\n${JSON.stringify(parsed, null, 2)}`;
+      }
+    } catch (e) {
+      // If parsing fails, just use the original message
+    }
   }
 
   return (
@@ -111,17 +99,17 @@ export default function LogDetailPage() {
               <Label className="text-base font-bold text-gray-400 ml-1">수집 결과</Label>
               <div className="h-14 flex items-center px-1">
                 <Badge
-                  className={`font-bold px-4 py-2 rounded-xl shadow-none border flex items-center gap-2 text-base ${log.result === "SUCCESS"
-                      ? "bg-primary-50 text-primary-600 border-primary-100"
-                      : "bg-primary-900 text-white border-primary-900"
+                  className={`font-bold px-4 py-2 rounded-xl shadow-none border flex items-center gap-2 text-base ${isSuccess
+                    ? "bg-primary-50 text-primary-600 border-primary-100"
+                    : "bg-primary-900 text-white border-primary-900"
                     }`}
                 >
-                  {log.result === "SUCCESS" ? (
+                  {isSuccess ? (
                     <CheckCircle2 className="w-5 h-5" />
                   ) : (
                     <XCircle className="w-5 h-5" />
                   )}
-                  {log.result === "SUCCESS" ? "SUCCESS" : "FAIL"}
+                  {isSuccess ? "SUCCESS" : "FAIL"}
                 </Badge>
               </div>
             </div>
@@ -133,7 +121,7 @@ export default function LogDetailPage() {
               <Label className="text-base font-bold text-gray-800 ml-1">정보원명</Label>
               <Input
                 readOnly
-                value={log.sourceName}
+                value={sourceName}
                 className="h-14 w-full rounded-xl bg-gray-50 border-none text-base font-bold px-5"
               />
             </div>
@@ -143,7 +131,7 @@ export default function LogDetailPage() {
                 <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   readOnly
-                  value={log.timestamp}
+                  value={formatDate(log.created_at)}
                   className="h-14 w-full rounded-xl bg-gray-50 border-none text-base font-mono px-12"
                 />
               </div>
@@ -157,7 +145,7 @@ export default function LogDetailPage() {
               <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 readOnly
-                value={log.url}
+                value={log.url || "-"}
                 className="h-14 w-full rounded-xl bg-gray-50 border-none text-base font-mono px-12 truncate"
               />
             </div>
@@ -168,21 +156,32 @@ export default function LogDetailPage() {
             <Label className="text-base font-bold text-gray-800 ml-1">요약 메시지</Label>
             <Input
               readOnly
-              value={log.details}
+              value={log.message || "-"}
               className="h-14 w-full rounded-xl bg-gray-50 border-none text-base font-medium px-5"
             />
           </div>
 
-          {/* 상세 에러 로그 */}
+          {/* 상세 로그 (details JSON) */}
           <div className="space-y-2">
-            <Label className="text-base font-bold text-gray-800 ml-1">상세 에러 로그</Label>
+            <Label className="text-base font-bold text-gray-800 ml-1">상세 데이터 (Details)</Label>
             <Textarea
               readOnly
-              value={log.errorLog}
-              className={`min-h-[250px] rounded-2xl bg-gray-900 text-gray-300 font-mono text-xs p-6 leading-relaxed border-none focus-visible:ring-0 ${log.result === "FAILURE" ? "border-l-4 border-l-rose-500" : ""
-                }`}
+              value={detailsString}
+              className="min-h-[150px] rounded-2xl bg-gray-50 text-gray-600 font-mono text-xs p-6 leading-relaxed border-none focus-visible:ring-0"
             />
           </div>
+
+          {/* 상세 에러 로그 */}
+          {!isSuccess && (
+            <div className="space-y-2">
+              <Label className="text-base font-bold text-gray-800 ml-1">상세 에러 로그</Label>
+              <Textarea
+                readOnly
+                value={displayError}
+                className={`min-h-[250px] rounded-2xl bg-gray-900 text-gray-300 font-mono text-xs p-6 leading-relaxed border-none focus-visible:ring-0 border-l-4 border-l-rose-500`}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -211,4 +210,5 @@ export default function LogDetailPage() {
       </div>
     </div>
   );
+
 }

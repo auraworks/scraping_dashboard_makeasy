@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   }
 
   if (failOnly) {
-    query = query.in("level", ["error", "failure"]);
+    query = query.or('level.ilike.error,level.ilike.failure');
   }
 
   const { data, error, count } = await query.range(from, to);

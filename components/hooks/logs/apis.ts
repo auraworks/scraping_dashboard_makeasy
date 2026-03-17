@@ -24,3 +24,13 @@ export async function getLogs(
 
   return response.json();
 }
+
+export async function getLogById(id: string): Promise<Log | null> {
+  const response = await fetch(`/api/logs/${id}`);
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+}

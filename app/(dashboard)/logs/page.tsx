@@ -161,7 +161,7 @@ export default function LogsPage() {
                   const isSuccess = level !== "error" && level !== "failure";
                   const sourceName =
                     log.sources?.name || `#${log.source_id ?? "-"}`;
-                  const errorMessage = isSuccess ? "-" : log.message || "-";
+                  const errorMessage = log.message || "-";
 
                   return (
                     <tr
@@ -187,24 +187,23 @@ export default function LogsPage() {
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Badge
-                            className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${
-                              isSuccess
+                            className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${isSuccess
                                 ? "bg-primary-50 text-primary-600 border-primary-100"
                                 : "bg-primary-900 text-white border-primary-900"
-                            }`}
+                              }`}
                           >
                             {isSuccess ? (
                               <CheckCircle2 className="w-3.5 h-3.5" />
                             ) : (
                               <XCircle className="w-3.5 h-3.5" />
                             )}
-                            {isSuccess ? "SUCCESS" : "FAIL"}
+                            {isSuccess ? (isSuccess ? "SUCCESS" : "INFO") : "FAIL"}
                           </Badge>
                         </div>
                       </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
+                      <td className="px-6 py-5">
                         <div
-                          className={`text-sm font-medium ${isSuccess ? "text-gray-400 italic" : "text-rose-500"}`}
+                          className={`text-sm font-medium line-clamp-2 group-hover:line-clamp-none transition-all ${isSuccess ? "text-gray-500" : "text-rose-500"}`}
                         >
                           {errorMessage}
                         </div>
@@ -243,11 +242,10 @@ export default function LogsPage() {
                     <PaginationLink
                       onClick={() => setPage(pageNum)}
                       isActive={page === pageNum}
-                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${
-                        page === pageNum
+                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${page === pageNum
                           ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
                           : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </PaginationLink>

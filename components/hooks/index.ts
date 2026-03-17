@@ -65,7 +65,7 @@ export {
 } from "./sources";
 
 // Log Hooks
-export { logKeys, getLogs, useLogList, type LogFilters } from "./logs";
+export { logKeys, getLogs, useLogList, useLogDetail, type LogFilters } from "./logs";
 
 // Dashboard Hooks
 export {

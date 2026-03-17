@@ -65,9 +65,17 @@ export default function SettingsPage() {
             {isRebooting ? "재부팅 중..." : "재부팅"}
           </button>
 
-          <p className="mt-3 text-xs text-amber-600">
-            재부팅 중에는 서비스가 1~2분간 중단됩니다.
-          </p>
+          <div className="mt-3 space-y-1.5">
+            <p className="text-xs text-amber-600">
+              재부팅 중에는 서비스가 1~2분간 중단됩니다.
+            </p>
+            <p className="text-xs text-gray-500">
+              크롤러는 <span className="font-semibold text-gray-700">매일 오전 6시</span>에 자동으로 재부팅되어 실행됩니다.
+            </p>
+            <p className="text-xs text-gray-500">
+              그 외 시간에 크롤링을 시작하려면 위 재부팅 버튼을 눌러 임의로 시작해 주세요.
+            </p>
+          </div>
         </div>
       </div>
     </div>
