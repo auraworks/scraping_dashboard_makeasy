@@ -780,7 +780,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-gray-100 shadow-xl">
                           <SelectItem value="CSS" className="font-medium">
-                            CSS Class
+                            클래스명
                           </SelectItem>
                         </SelectContent>
                       </Select>
