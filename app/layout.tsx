@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  icons: {
+    icon: "/logo_full.png",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
