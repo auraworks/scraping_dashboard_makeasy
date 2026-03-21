@@ -12,8 +12,32 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: "UniCrawl - 범용 크롤링 데이터 대시보드",
+    template: "%s | UniCrawl",
+  },
+  description:
+    "다양한 데이터 소스에서 수집한 크롤링 데이터를 통합 관리하고 모니터링하는 대시보드",
+  keywords: [
+    "크롤링",
+    "데이터 수집",
+    "데이터 대시보드",
+    "웹 스크래핑",
+    "모니터링",
+  ],
+  authors: [{ name: "UniCrawl" }],
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    title: "UniCrawl - 범용 크롤링 데이터 대시보드",
+    description:
+      "다양한 데이터 소스에서 수집한 크롤링 데이터를 통합 관리하고 모니터링하는 대시보드",
+    siteName: "UniCrawl",
+  },
 };
 
 const geistSans = Geist({
