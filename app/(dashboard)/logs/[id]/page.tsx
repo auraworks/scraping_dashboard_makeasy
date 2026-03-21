@@ -42,15 +42,19 @@ export default function LogDetailPage() {
   const sourceName = log.sources?.name || `#${log.source_id ?? "-"}`;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
+    const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
+
     return date.toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit"
-    });
+      second: "2-digit",
+      hour12: false
+    }).replace(/\. /g, "-").replace(/\./, "");
   };
 
   // Convert details JSON to formatted string if it exists

@@ -181,6 +181,7 @@ export interface Source {
   content_class: Json | null;
   memo: string | null;
   is_live: boolean | null;
+  "1depth": boolean | null;
   created_at: string;
 }
 
@@ -196,6 +197,7 @@ export interface Data {
   extra_data: Json | null;
   category: string | null;
   data_id: string | null;
+  "1depth": boolean | null;
   created_at: string;
 }
 

@@ -159,15 +159,15 @@ export default function SourcesPage() {
   const total = sourcesData?.total || 0;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date
-      .toLocaleDateString("ko-KR", {
-        year: "2-digit",
-        month: "2-digit",
-        day: "2-digit",
-      })
-      .replace(/\./g, "/")
-      .replace(/\s/g, "");
+    // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
+    const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
+
+    return date.toLocaleDateString("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
+    }).replace(/\. /g, "/").replace(/\./, "");
   };
 
   const handleSearch = (value: string) => {
@@ -438,11 +438,10 @@ export default function SourcesPage() {
                     <PaginationLink
                       onClick={() => setPage(pageNum)}
                       isActive={page === pageNum}
-                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${
-                        page === pageNum
-                          ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
-                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                      }`}
+                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${page === pageNum
+                        ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
+                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
                     >
                       {pageNum}
                     </PaginationLink>

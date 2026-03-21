@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -127,19 +128,21 @@ const COUNTRIES = [
 
 // Zod 스키마 - actions는 form에서 관리하지 않음 (별도 state 사용)
 const sourceSchema = z.object({
-  country: z.string().min(1, "국가를 선택해주세요."),
-  name: z.string().min(1, "정보원명을 입력해주세요."),
-  url: z.string().min(1, "URL을 입력해주세요."),
-  type: z.string(),
-  cycle: z.string(),
-  status: z.string().min(1, "상태를 선택해주세요."),
-  parsingPrompt: z.string().optional(),
-  description: z.string().optional(),
-  articleClass: z.string().optional(),
+  country: z.string().min(1, "국가를 선택해주세요.").default("대한민국"),
+  name: z.string().min(1, "정보원명을 입력해주세요.").default(""),
+  url: z.string().min(1, "URL을 입력해주세요.").default(""),
+  type: z.string().default(""),
+  cycle: z.string().default(""),
+  status: z.string().min(1, "상태를 선택해주세요.").default("수집함"),
+  parsingPrompt: z.string().optional().default(""),
+  description: z.string().optional().default(""),
+  articleClass: z.string().optional().default(""),
   contentClass: z
     .object({ type: z.enum(["XPath", "CSS"]), value: z.string() })
     .optional()
-    .nullable(),
+    .nullable()
+    .default(null),
+  isOneDepth: z.boolean().default(false),
 });
 
 type SourceFormValues = z.infer<typeof sourceSchema>;
@@ -168,6 +171,7 @@ interface SourceFormProps {
     created_at?: string;
     last_collected?: string;
     source_id?: string | null;
+    "1depth"?: boolean | null;
   };
   isEdit?: boolean;
 }
@@ -266,6 +270,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
       description: initialData?.memo ?? "",
       articleClass: initialData?.article_class ?? "",
       contentClass: parseContentClassFromDB(initialData?.content_class),
+      isOneDepth: initialData?.["1depth"] ?? false,
     },
   });
 
@@ -353,24 +358,25 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
       actions:
         actions.length > 0
           ? actions.map((a, i) => ({
-              type: a.type.toLowerCase(),
-              value: a.value,
-              sequence: i + 1,
-            }))
+            type: a.type.toLowerCase(),
+            value: a.value,
+            sequence: i + 1,
+          }))
           : [],
       article_class: values.articleClass || null,
       // contentClass state를 직접 사용
       content_class: contentClass
         ? [
-            {
-              type: contentClass.type.toLowerCase(),
-              value: contentClass.value,
-              sequence: 1,
-            },
-          ]
+          {
+            type: contentClass.type.toLowerCase(),
+            value: contentClass.value,
+            sequence: 1,
+          },
+        ]
         : null,
       source_id: initialData?.source_id || null,
       memo: values.description || null,
+      "1depth": values.isOneDepth,
     };
 
     console.log("=== SUBMIT DEBUG ===");
@@ -812,18 +818,43 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
 
                 {/* Content Class Settings */}
                 <div className="md:col-span-2 space-y-4 pt-6 border-t border-gray-100 mt-6">
-                  <div className="flex flex-col gap-1">
-                    <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
-                      <Box className="w-5 h-5 text-primary-500" /> 컨텐츠 영역
-                      설정 (Content Class)
-                    </FormLabel>
-                    <p className="text-xs text-gray-400 ml-1">
-                      상세페이지에서 본문 내용이 위치한 영역의 XPath 또는 CSS
-                      선택자를 입력하세요.
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
+                        <Box className="w-5 h-5 text-primary-500" /> 컨텐츠 영역
+                        설정 (Content Class)
+                      </FormLabel>
+                      <p className="text-xs text-gray-400 ml-1">
+                        상세페이지에서 본문 내용이 위치한 영역의 XPath 또는 CSS
+                        선택자를 입력하세요.
+                      </p>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="isOneDepth"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-2 space-y-0 p-3 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-bold text-gray-700 cursor-pointer">
+                            1뎁스
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 flex flex-col md:flex-row items-end gap-3">
+
+                  <div
+                    className={`bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 flex flex-col md:flex-row items-end gap-3 transition-all duration-300 ${form.watch("isOneDepth")
+                      ? "opacity-50 grayscale bg-gray-100 shadow-inner scale-[0.99] pointer-events-none"
+                      : "opacity-100"
+                      }`}
+                  >
                     <div className="flex-shrink-0 w-full md:w-32 space-y-2">
                       <label className="text-xs font-bold text-gray-500 ml-1">
                         유형

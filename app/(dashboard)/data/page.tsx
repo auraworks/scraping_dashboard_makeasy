@@ -36,11 +36,20 @@ import type { DataWithSource, Country } from "@/types/database";
 
 const PAGE_SIZE = 10;
 
-// 날짜 포맷팅 함수
 function formatDate(dateString: string | null): string {
   if (!dateString) return "-";
-  const date = new Date(dateString);
-  return format(date, "yy/MM/dd HH:mm", { locale: ko });
+  // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
+  const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date).replace(/\. /g, "/").replace(/\./, "");
 }
 
 export default function DataPage() {

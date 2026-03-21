@@ -39,18 +39,20 @@ export default function LogsPage() {
   const totalPages = logsData?.totalPages || 1;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date
-      .toLocaleString("ko-KR", {
-        year: "2-digit",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-      .replace(/\./g, "/")
-      .replace(/\s/g, "");
+    // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
+    // (예: 실제 17시인 시간이 DB에는 17시 UTC로 저장되어 UI에서 02시(다음날)로 보이는 현상 방지)
+    const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
+
+    return date.toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).replace(/\. /g, "/").replace(/\./, "");
   };
 
   const handleSearch = (value: string) => {
@@ -123,7 +125,7 @@ export default function LogsPage() {
                   수집결과
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[30%]">
-                  에러 로그
+                  로그
                 </th>
               </tr>
             </thead>
@@ -188,8 +190,8 @@ export default function LogsPage() {
                         <div className="flex items-center gap-2">
                           <Badge
                             className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${isSuccess
-                                ? "bg-primary-50 text-primary-600 border-primary-100"
-                                : "bg-primary-900 text-white border-primary-900"
+                              ? "bg-primary-50 text-primary-600 border-primary-100"
+                              : "bg-primary-900 text-white border-primary-900"
                               }`}
                           >
                             {isSuccess ? (
@@ -243,8 +245,8 @@ export default function LogsPage() {
                       onClick={() => setPage(pageNum)}
                       isActive={page === pageNum}
                       className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${page === pageNum
-                          ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
-                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
+                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
                         }`}
                     >
                       {pageNum}

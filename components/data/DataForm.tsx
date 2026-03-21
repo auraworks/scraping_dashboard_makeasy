@@ -14,11 +14,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { IoMenu } from "react-icons/io5";
-import { X, Calendar as CalendarIcon } from "lucide-react";
+import { X, Calendar as CalendarIcon, Box } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ const dataSchema = z.object({
   sourceUrl: z.string().optional(),
   extraData: z.string().optional(),
   category: z.string().optional(),
+  isOneDepth: z.boolean().default(false),
 });
 
 type DataFormValues = z.infer<typeof dataSchema>;
@@ -49,6 +51,7 @@ interface DataFormProps {
     id?: number;
     collectedAt?: Date | string;
     publishedAt?: Date | string;
+    "1depth"?: boolean | null;
   };
   isEdit?: boolean;
 }
@@ -78,6 +81,7 @@ export function DataForm({
       sourceUrl: initialData?.sourceUrl || "",
       extraData: initialData?.extraData || "",
       category: initialData?.category || "",
+      isOneDepth: initialData?.["1depth"] ?? false,
     },
   });
 
@@ -93,6 +97,7 @@ export function DataForm({
     if (initialData?.sourceUrl) form.setValue("sourceUrl", initialData.sourceUrl);
     if (initialData?.extraData) form.setValue("extraData", initialData.extraData);
     if (initialData?.category) form.setValue("category", initialData.category);
+    if (initialData?.["1depth"] !== undefined) form.setValue("isOneDepth", initialData["1depth"] ?? false);
   }, [initialData, form]);
 
   // 카테고리 추가
@@ -381,7 +386,34 @@ export function DataForm({
             </div>
           </div>
 
-          {/* Actions */}
+          {/* 1뎁스 설정 */}
+          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Box className="w-5 h-5 text-blue-500" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">기타 설정</h2>
+            </div>
+            <FormField
+              control={form.control}
+              name="isOneDepth"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 p-3 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-bold text-gray-700 cursor-pointer">
+                    1뎁스
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* 타이틀 및 원문 링크 */}
           <div className="flex items-center justify-between pt-4">
             <Button
               type="button"
