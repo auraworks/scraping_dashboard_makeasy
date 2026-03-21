@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const supabase = await createClient();
@@ -16,7 +16,7 @@ export async function GET(
         sources (
           name
         )
-      `
+      `,
     )
     .eq("id", id)
     .single();
@@ -24,7 +24,7 @@ export async function GET(
   if (error) {
     return NextResponse.json(
       { error: "로그를 찾을 수 없습니다." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
