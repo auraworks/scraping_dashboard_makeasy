@@ -75,7 +75,11 @@ export async function getHourlyTraffic(): Promise<HourlyTraffic[]> {
 
   data?.forEach((item) => {
     if (item.collected_at) {
-      const hour = new Date(item.collected_at).getHours();
+      // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
+      const date = new Date(
+        new Date(item.collected_at).getTime() - 9 * 60 * 60 * 1000,
+      );
+      const hour = date.getHours();
       hourCounts[hour]++;
     }
   });
@@ -103,9 +107,7 @@ export async function getSourceDistribution(): Promise<SourceDistribution[]> {
   const supabase = createClient();
 
   // Get all data with source names
-  const { data, error } = await supabase
-    .from("datas")
-    .select(`
+  const { data, error } = await supabase.from("datas").select(`
       id,
       sources (
         name
@@ -135,4 +137,28 @@ export async function getSourceDistribution(): Promise<SourceDistribution[]> {
     .sort((a, b) => b.count - a.count);
 
   return result;
+}
+
+// Get last collection date from history table
+export async function getLastCollectionDate(): Promise<string | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("history")
+    .select("collected_at")
+    .eq("event_type", "collection")
+    .order("collected_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null; // No rows
+    throw {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    } as ApiError;
+  }
+
+  return data?.collected_at ?? null;
 }

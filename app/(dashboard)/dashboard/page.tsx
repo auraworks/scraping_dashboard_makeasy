@@ -27,6 +27,7 @@ import {
   useHourlyTraffic,
   useSourceDistribution,
   useDataList,
+  useLastCollectionDate,
 } from "@/components/hooks";
 
 // Chart.js 등록
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const { data: hourlyData, isLoading: hourlyLoading } = useHourlyTraffic();
   const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
   const { data: recentData, isLoading: recentLoading } = useDataList({ page: 1, pageSize: 5 });
+  const { data: lastCollectedAt } = useLastCollectionDate();
 
   // KPI 데이터
   const stats = [
@@ -160,6 +162,21 @@ export default function Dashboard() {
               다양한 채널에서 실시간으로 데이터를 수집하고, AI 분석을 통해 가치 있는 이슈를 발굴하세요.
             </p>
           </div>
+          <div className="text-center md:text-right shrink-0">
+            <p className="text-primary-200 text-xs mb-1">마지막 수집일</p>
+            <p className="text-white text-sm md:text-base font-semibold">
+              {lastCollectedAt
+                ? new Intl.DateTimeFormat("ko-KR", {
+                    timeZone: "Asia/Seoul",
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date(lastCollectedAt))
+                : "-"}
+            </p>
+          </div>
         </div>
 
         {/* Background Gradients */}
@@ -264,7 +281,7 @@ export default function Dashboard() {
               <h2 className="text-base md:text-lg font-bold text-gray-900">최근 수집된 주요 이슈</h2>
               <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                실시간 업데이트 중
+                매일 오전6시 업데이트
               </p>
             </div>
           </div>

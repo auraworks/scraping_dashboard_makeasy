@@ -4,6 +4,7 @@ export const dashboardKeys = {
   stats: () => [...dashboardKeys.all, "stats"] as const,
   hourlyTraffic: () => [...dashboardKeys.all, "hourlyTraffic"] as const,
   sourceDistribution: () => [...dashboardKeys.all, "sourceDistribution"] as const,
+  lastCollection: () => [...dashboardKeys.all, "lastCollection"] as const,
 };
 
 // Dashboard Stats Type

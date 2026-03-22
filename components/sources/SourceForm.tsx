@@ -151,6 +151,7 @@ type SourceFormValues = z.infer<typeof sourceSchema>;
 interface Action {
   type: "XPath" | "CSS";
   value: string;
+  iteration?: number;
 }
 
 interface SourceFormProps {
@@ -200,6 +201,7 @@ const parseActionsFromDB = (raw: unknown): Action[] => {
     .map((a) => ({
       type: normalizeType((a as { type: string }).type),
       value: (a as { value: string }).value,
+      iteration: (a as { iteration?: number }).iteration,
     }));
 };
 
@@ -242,6 +244,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
     "XPath" | "CSS"
   >("XPath");
   const [currentActionValue, setCurrentActionValue] = React.useState("");
+  const [currentIteration, setCurrentIteration] = React.useState<number>(1);
 
   // ========== initialData 변경 시 state 동기화 ==========
   React.useEffect(() => {
@@ -285,18 +288,38 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
     setTypes(types.filter((t) => t !== typeToRemove));
   };
 
+  const updateType = (index: number, newValue: string) => {
+    if (!newValue.trim()) return;
+    const newTypes = [...types];
+    newTypes[index] = newValue.trim();
+    setTypes(newTypes);
+  };
+
   const addAction = () => {
     if (currentActionValue.trim()) {
       setActions([
         ...actions,
-        { type: currentActionType, value: currentActionValue.trim() },
+        {
+          type: currentActionType,
+          value: currentActionValue.trim(),
+          iteration: currentIteration || 1,
+        },
       ]);
       setCurrentActionValue("");
+      setCurrentIteration(1);
     }
   };
 
   const removeAction = (index: number) => {
     setActions(actions.filter((_, i) => i !== index));
+  };
+
+  const updateAction = (index: number, updates: Partial<Action>) => {
+    setActions(
+      actions.map((action, i) =>
+        i === index ? { ...action, ...updates } : action,
+      ),
+    );
   };
 
   const updateContentClass = (type: "XPath" | "CSS", value: string) => {
@@ -361,6 +384,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
             type: a.type.toLowerCase(),
             value: a.value,
             sequence: i + 1,
+            iteration: a.iteration || 1,
           }))
           : [],
       article_class: values.articleClass || null,
@@ -566,13 +590,18 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                       </p>
                       {types.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {types.map((type) => (
+                          {types.map((type, idx) => (
                             <Badge
-                              key={type}
+                              key={`${type}-${idx}`}
                               variant="secondary"
                               className="bg-primary-50 text-primary-600 border-none px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 group hover:bg-primary-100 transition-colors"
                             >
-                              {type}
+                              <input
+                                autoFocus={false}
+                                value={type}
+                                onChange={(e) => updateType(idx, e.target.value)}
+                                className="bg-transparent border-none outline-none focus:ring-0 p-0 w-24 text-sm font-bold text-primary-600"
+                              />
                               <button
                                 type="button"
                                 onClick={() => removeType(type)}
@@ -716,6 +745,21 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                       className="h-14 bg-white rounded-xl border-none shadow-sm text-base font-medium"
                     />
                   </div>
+                  <div className="flex-shrink-0 w-full md:w-32 space-y-2">
+                    <label className="text-xs font-bold text-gray-500 ml-1">
+                      반복 횟수
+                    </label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      value={currentIteration}
+                      onChange={(e) =>
+                        setCurrentIteration(parseInt(e.target.value) || 1)
+                      }
+                      className="h-14 bg-white rounded-xl border-none shadow-sm font-bold text-center"
+                    />
+                  </div>
                   <Button
                     type="button"
                     variant="ghost"
@@ -731,18 +775,59 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                   <div className="space-y-3 pt-2">
                     {actions.map((action, index) => (
                       <div
-                        key={`${action.type}-${action.value}-${index}`}
-                        className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all animate-in fade-in slide-in-from-top-2"
+                        key={`${index}`}
+                        className="group flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all animate-in fade-in slide-in-from-top-2"
                       >
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-bold font-mono">
                           {index + 1}
                         </div>
-                        <div className="flex-shrink-0 px-3 py-1 rounded-lg bg-primary-50 text-primary-700 text-xs font-extrabold uppercase tracking-tight">
-                          {action.type}
+
+                        <div className="flex-shrink-0 w-full md:w-32">
+                          <Select
+                            value={action.type}
+                            onValueChange={(v: "XPath" | "CSS") =>
+                              updateAction(index, { type: v })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-gray-50 rounded-xl border-none shadow-none font-bold text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                              <SelectItem value="XPath" className="text-xs">
+                                XPath
+                              </SelectItem>
+                              <SelectItem value="CSS" className="text-xs">
+                                CSS
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="flex-grow font-mono text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg truncate">
-                          {action.value}
+
+                        <div className="flex-grow w-full">
+                          <Input
+                            value={action.value}
+                            onChange={(e) =>
+                              updateAction(index, { value: e.target.value })
+                            }
+                            className="h-10 bg-gray-50 rounded-xl border-none shadow-none text-xs font-mono font-medium"
+                          />
                         </div>
+
+                        <div className="flex-shrink-0 w-full md:w-24 flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            value={action.iteration || 1}
+                            onChange={(e) =>
+                              updateAction(index, {
+                                iteration: parseInt(e.target.value) || 1,
+                              })
+                            }
+                            className="h-10 bg-gray-50 rounded-xl border-none shadow-none font-bold text-xs text-center"
+                          />
+                          <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">회 반복</span>
+                        </div>
+
                         <button
                           type="button"
                           onClick={() => removeAction(index)}

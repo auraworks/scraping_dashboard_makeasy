@@ -1,8 +1,8 @@
 // Data Query Hooks
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { dataKeys, DataFilters } from "./keys";
-import { getData, getDataById, getDataByDataId, getDataBySource, getCountries, getSourceCategories } from "./apis";
-import type { DataWithSource, Country, PaginatedResponse, ApiError } from "@/types/database";
+import { getData, getDataById, getDataByDataId, getDataBySource, getCountries, getSourceCategories, getSourcesForFilter } from "./apis";
+import type { DataWithSource, Country, PaginatedResponse, ApiError, Source } from "@/types/database";
 
 // Use Data List with filters
 export function useDataList(
@@ -93,6 +93,20 @@ export function useSourceCategories(
   return useQuery({
     queryKey: dataKeys.categories(),
     queryFn: getSourceCategories,
+    ...options,
+  });
+}
+
+// Use Sources list for filter dropdown (id + name)
+export function useSourcesForFilter(
+  options?: Omit<
+    UseQueryOptions<Array<{ id: number; name: string | null; country: Country | null }>, ApiError, Array<{ id: number; name: string | null; country: Country | null }>, ReturnType<typeof dataKeys.sourcesForFilter>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dataKeys.sourcesForFilter(),
+    queryFn: getSourcesForFilter,
     ...options,
   });
 }

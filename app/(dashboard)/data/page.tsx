@@ -31,7 +31,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useDataList, useCountries, useSourceCategories, type DataFilters } from "@/components/hooks/datas";
+import { useDataList, useCountries, useSourcesForFilter, type DataFilters } from "@/components/hooks/datas";
 import type { DataWithSource, Country } from "@/types/database";
 
 const PAGE_SIZE = 10;
@@ -58,15 +58,15 @@ export default function DataPage() {
   // 필터 상태
   const [search, setSearch] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country | "all">("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedSourceId, setSelectedSourceId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [currentPage, setCurrentPage] = useState(1);
 
   // 국가 목록 조회 (sources에서 가져옴)
   const { data: countries = [] } = useCountries();
 
-  // 유형(카테고리) 목록 조회 (sources에서 가져옴)
-  const { data: categories = [] } = useSourceCategories();
+  // 정보원 목록 조회 (sources에서 가져옴)
+  const { data: sources = [] } = useSourcesForFilter();
 
   // 필터 객체 생성
   const filters: DataFilters = useMemo(() => {
@@ -76,19 +76,55 @@ export default function DataPage() {
     };
     if (search) result.search = search;
     if (selectedCountry !== "all") result.country = selectedCountry;
-    if (selectedCategory !== "all") result.category = selectedCategory;
+    if (selectedSourceId !== "all") result.sourceId = Number(selectedSourceId);
     if (selectedDate) result.publishedAt = format(selectedDate, "yyyy-MM-dd");
     return result;
-  }, [search, selectedCountry, selectedCategory, selectedDate, currentPage]);
+  }, [search, selectedCountry, selectedSourceId, selectedDate, currentPage]);
 
   // 데이터 조회
   const { data: response, isLoading, isError, error } = useDataList(filters);
+
+  // 엑셀 다운로드 (현재 페이지 데이터 기준)
+  const handleDownload = () => {
+    if (dataItems.length === 0) return;
+
+    const headers = ["ID", "국가", "제목", "정보원", "유형", "수집일", "발행일"];
+    const rows = dataItems.map((item) => [
+      item.id,
+      item.sources?.country ?? "",
+      item.title ?? "",
+      item.sources?.name ?? "",
+      (() => {
+        const cats = (item.sources?.category as unknown as string[] | string | null) ?? item.category;
+        return Array.isArray(cats) ? cats.join(", ") : cats ?? "";
+      })(),
+      formatDate(item.collected_at),
+      formatDate(item.published_date),
+    ]);
+
+    const csvRows = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ];
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `데이터_${selectedDate ? format(selectedDate, "yyyy-MM-dd") : "전체"}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   // 필터 초기화
   const handleReset = () => {
     setSearch("");
     setSelectedCountry("all");
-    setSelectedCategory("all");
+    setSelectedSourceId("all");
     setSelectedDate(undefined);
     setCurrentPage(1);
   };
@@ -168,14 +204,14 @@ export default function DataPage() {
               </SelectContent>
             </Select>
 
-            <Select value={selectedCategory} onValueChange={(v) => { setSelectedCategory(v); setCurrentPage(1); }}>
-              <SelectTrigger className="w-[120px] h-11 bg-white border-gray-200 rounded-xl shadow-sm">
-                <SelectValue placeholder="모든 유형" />
+            <Select value={selectedSourceId} onValueChange={(v) => { setSelectedSourceId(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[160px] h-11 bg-white border-gray-200 rounded-xl shadow-sm">
+                <SelectValue placeholder="모든 정보원" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 유형</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="all">모든 정보원</SelectItem>
+                {sources.map((source) => (
+                  <SelectItem key={source.id} value={String(source.id)}>{source.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -207,6 +243,8 @@ export default function DataPage() {
             <Button
               variant="outline"
               className="h-11 px-4 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-600 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm"
+              onClick={handleDownload}
+              disabled={dataItems.length === 0}
             >
               <FileSpreadsheet className="w-4 h-4" />
               엑셀 다운로드

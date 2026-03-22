@@ -1,7 +1,7 @@
 // Dashboard Query Hooks
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { dashboardKeys, DashboardStats, HourlyTraffic, SourceDistribution } from "./keys";
-import { getDashboardStats, getHourlyTraffic, getSourceDistribution } from "./apis";
+import { getDashboardStats, getHourlyTraffic, getSourceDistribution, getLastCollectionDate } from "./apis";
 import type { ApiError } from "@/types/database";
 
 // Use Dashboard Stats
@@ -42,6 +42,20 @@ export function useSourceDistribution(
   return useQuery({
     queryKey: dashboardKeys.sourceDistribution(),
     queryFn: getSourceDistribution,
+    ...options,
+  });
+}
+
+// Use Last Collection Date
+export function useLastCollectionDate(
+  options?: Omit<
+    UseQueryOptions<string | null, ApiError, string | null, ReturnType<typeof dashboardKeys.lastCollection>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dashboardKeys.lastCollection(),
+    queryFn: getLastCollectionDate,
     ...options,
   });
 }

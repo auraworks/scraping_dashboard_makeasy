@@ -11,6 +11,7 @@ export const dataKeys = {
   bySource: (sourceId: number) => [...dataKeys.all, "source", sourceId] as const,
   countries: () => [...dataKeys.all, "countries"] as const,
   categories: () => [...dataKeys.all, "categories"] as const,
+  sourcesForFilter: () => [...dataKeys.all, "sources-for-filter"] as const,
 };
 
 export interface DataFilters {

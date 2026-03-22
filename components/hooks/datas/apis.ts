@@ -68,11 +68,14 @@ export async function getData(
     query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
   }
   if (filters?.publishedAt) {
-    query = query.gte("published_date", filters.publishedAt);
+    const [y, m, d] = filters.publishedAt.split("-").map(Number);
+    const next = new Date(y, m - 1, d + 1);
+    const nextDate = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+    query = query.gte("published_date", filters.publishedAt).lt("published_date", nextDate);
   }
 
   const { data, error, count } = await query
-    .order("collected_at", { ascending: false })
+    .order("published_date", { ascending: false, nullsFirst: false })
     .range(from, to);
 
   if (error) {
@@ -290,6 +293,27 @@ export async function getCountries(): Promise<Country[]> {
     if (b === "대한민국") return 1;
     return a.localeCompare(b, 'ko');
   });
+}
+
+// Get all sources for filter dropdown (id, name, country)
+export async function getSourcesForFilter(): Promise<Array<{ id: number; name: string | null; country: Country | null }>> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("sources")
+    .select("id, name, country")
+    .not("name", "is", null)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    } as ApiError;
+  }
+
+  return (data || []) as Array<{ id: number; name: string | null; country: Country | null }>;
 }
 
 // Get unique categories from sources (for filter dropdown)
