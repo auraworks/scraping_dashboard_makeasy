@@ -5,6 +5,7 @@ export const dashboardKeys = {
   hourlyTraffic: () => [...dashboardKeys.all, "hourlyTraffic"] as const,
   sourceDistribution: () => [...dashboardKeys.all, "sourceDistribution"] as const,
   lastCollection: () => [...dashboardKeys.all, "lastCollection"] as const,
+  dailyTrend: () => [...dashboardKeys.all, "dailyTrend"] as const,
 };
 
 // Dashboard Stats Type
@@ -22,5 +23,12 @@ export interface HourlyTraffic {
 // Source Distribution Type
 export interface SourceDistribution {
   source: string;
+  count: number;
+}
+
+// Daily Trend Type (past 7 days)
+export interface DailyTrend {
+  date: string;   // "MM/DD" format
+  label: string;  // "월", "화", etc.
   count: number;
 }

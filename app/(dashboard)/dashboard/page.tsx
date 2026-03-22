@@ -28,6 +28,7 @@ import {
   useSourceDistribution,
   useDataList,
   useLastCollectionDate,
+  useDailyTrend,
 } from "@/components/hooks";
 
 // Chart.js 등록
@@ -56,6 +57,20 @@ export default function Dashboard() {
   const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
   const { data: recentData, isLoading: recentLoading } = useDataList({ page: 1, pageSize: 5 });
   const { data: lastCollectedAt } = useLastCollectionDate();
+  const { data: dailyTrend = [] } = useDailyTrend();
+
+  // 일별 트렌드 데이터
+  const dailyCounts = dailyTrend.map((d) => d.count);
+  const dailyLabels = dailyTrend.map((d) => d.label);
+  const dailyDates = dailyTrend.map((d) => d.date);
+  const maxDaily = Math.max(...dailyCounts, 1);
+
+  // 전일 대비 증감 계산
+  const todayCount = dailyCounts[dailyCounts.length - 1] || 0;
+  const yesterdayCount = dailyCounts.length >= 2 ? dailyCounts[dailyCounts.length - 2] : 0;
+  const diffFromYesterday = yesterdayCount > 0
+    ? ((todayCount - yesterdayCount) / yesterdayCount * 100).toFixed(1)
+    : todayCount > 0 ? "+100" : "0";
 
   // KPI 데이터
   const stats = [
@@ -64,18 +79,16 @@ export default function Dashboard() {
       subtitle: "전체 소스 누적 데이터",
       value: statsLoading ? "..." : formatNumber(statsData?.totalCount || 0),
       icon: <Database className="w-5 h-5 text-primary-500" />,
-      footer: "전일 대비 +1.2%",
-      footerColor: "text-emerald-600",
-      chartData: [65, 75, 70, 80, 85, 90, 95]
+      footer: `전일 대비 ${Number(diffFromYesterday) >= 0 ? "+" : ""}${diffFromYesterday}%`,
+      footerColor: Number(diffFromYesterday) >= 0 ? "text-emerald-600" : "text-red-500",
     },
     {
       title: "금일 신규 수집",
       subtitle: "실시간 수집 현황",
       value: statsLoading ? "..." : formatNumber(statsData?.todayCount || 0),
       icon: <Server className="w-5 h-5 text-blue-500" />,
-      footer: "지난 시간 대비 +320건",
+      footer: `어제 ${formatNumber(yesterdayCount)}건`,
       footerColor: "text-blue-600",
-      chartData: [20, 40, 30, 50, 40, 60, 80]
     },
   ];
 
@@ -100,11 +113,12 @@ export default function Dashboard() {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { size: 10 } }
+        ticks: { font: { size: 11 }, color: "#9ca3af" }
       },
       y: {
         grid: { color: "#f3f4f6" },
-        ticks: { display: false }
+        ticks: { display: true, font: { size: 11 }, color: "#9ca3af", padding: 8 },
+        beginAtZero: true,
       }
     }
   };
@@ -200,14 +214,25 @@ export default function Dashboard() {
               </div>
 
               {/* Mini Sparkline */}
-              <div className="flex items-end gap-1 h-12 md:h-16 mb-3 md:mb-4">
-                {stat.chartData.map((val, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-primary-500 rounded-t-sm opacity-80 hover:opacity-100 transition-opacity"
-                    style={{ height: `${val}%` }}
-                  ></div>
-                ))}
+              <div className="mb-3 md:mb-4">
+                <div className="flex items-end gap-1 h-12 md:h-16">
+                  {dailyCounts.map((val, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+                      <span className="text-[9px] text-gray-400 mb-0.5 font-medium">{formatNumber(val)}</span>
+                      <div
+                        className={`w-full rounded-t-sm opacity-80 hover:opacity-100 transition-opacity ${i === dailyCounts.length - 1 ? "bg-blue-500" : "bg-primary-500"}`}
+                        style={{ height: `${maxDaily > 0 ? (val / maxDaily) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between mt-1">
+                  {dailyDates.map((date, i) => (
+                    <div key={i} className="flex flex-col items-center flex-1">
+                      <span className="text-[9px] text-gray-400">{dailyLabels[i]}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center gap-2 pt-2 md:pt-3 border-t border-gray-50">
