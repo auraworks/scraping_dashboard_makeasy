@@ -41,7 +41,7 @@ const dataSchema = z.object({
   sourceUrl: z.string().optional(),
   extraData: z.string().optional(),
   category: z.string().optional(),
-  isOneDepth: z.boolean().default(false),
+  isOneDepth: z.boolean(),
 });
 
 type DataFormValues = z.infer<typeof dataSchema>;

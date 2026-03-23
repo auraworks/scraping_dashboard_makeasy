@@ -1,7 +1,13 @@
 // Dashboard API Functions
 import { createClient } from "@/lib/supabase/client";
 import type { ApiError } from "@/types/database";
-import type { DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend, DashboardSummary } from "./keys";
+import type {
+  DashboardStats,
+  HourlyTraffic,
+  SourceDistribution,
+  DailyTrend,
+  DashboardSummary,
+} from "./keys";
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
@@ -25,10 +31,10 @@ function getKSTDateString(date: Date = new Date()): string {
 function getKSTMidnightISO(date: Date = new Date()): string {
   const kst = toKST(date);
   const y = kst.getFullYear();
-  const m = String(kst.getMonth() + 1).padStart(2, "0");
-  const d = String(kst.getDate()).padStart(2, "0");
+  const m = kst.getMonth();
+  const d = kst.getDate();
   // KST 자정 = UTC 기준 9시간 전
-  const kstMidnight = new Date(Date.UTC(y, kst.getMonth(), d, 0, 0, 0) - KST_OFFSET_MS);
+  const kstMidnight = new Date(Date.UTC(y, m, d, 0, 0, 0) - KST_OFFSET_MS);
   return kstMidnight.toISOString();
 }
 
@@ -222,7 +228,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   // RPC로 일별 집계 (행 수 제한 없이 정확한 COUNT)
   const { data: rpcData, error: rpcError } = await supabase.rpc(
     "get_daily_collection_counts",
-    { start_date: startISO, end_date: endISO }
+    { start_date: startISO, end_date: endISO },
   );
 
   if (rpcError) {
@@ -257,7 +263,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const todayCount = dailyTrend[dailyTrend.length - 1]?.count || 0;
-  const yesterdayCount = dailyTrend.length >= 2 ? dailyTrend[dailyTrend.length - 2].count : 0;
+  const yesterdayCount =
+    dailyTrend.length >= 2 ? dailyTrend[dailyTrend.length - 2].count : 0;
 
   return {
     totalCount: totalCount || 0,

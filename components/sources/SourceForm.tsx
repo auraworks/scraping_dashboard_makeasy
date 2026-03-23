@@ -128,21 +128,20 @@ const COUNTRIES = [
 
 // Zod 스키마 - actions는 form에서 관리하지 않음 (별도 state 사용)
 const sourceSchema = z.object({
-  country: z.string().min(1, "국가를 선택해주세요.").default("대한민국"),
-  name: z.string().min(1, "정보원명을 입력해주세요.").default(""),
-  url: z.string().min(1, "URL을 입력해주세요.").default(""),
-  type: z.string().default(""),
-  cycle: z.string().default(""),
-  status: z.string().min(1, "상태를 선택해주세요.").default("수집함"),
-  parsingPrompt: z.string().optional().default(""),
-  description: z.string().optional().default(""),
-  articleClass: z.string().optional().default(""),
+  country: z.string().min(1, "국가를 선택해주세요."),
+  name: z.string().min(1, "정보원명을 입력해주세요."),
+  url: z.string().min(1, "URL을 입력해주세요."),
+  type: z.string().optional(),
+  cycle: z.string().optional(),
+  status: z.string().min(1, "상태를 선택해주세요."),
+  parsingPrompt: z.string().optional(),
+  description: z.string().optional(),
+  articleClass: z.string().optional(),
   contentClass: z
     .object({ type: z.enum(["XPath", "CSS"]), value: z.string() })
     .optional()
-    .nullable()
-    .default(null),
-  isOneDepth: z.boolean().default(false),
+    .nullable(),
+  isOneDepth: z.boolean(),
 });
 
 type SourceFormValues = z.infer<typeof sourceSchema>;
