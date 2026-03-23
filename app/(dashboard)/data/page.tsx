@@ -38,8 +38,6 @@ const PAGE_SIZE = 10;
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return "-";
-  // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
-  const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
 
   return new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
@@ -49,7 +47,7 @@ function formatDate(dateString: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).format(date).replace(/\. /g, "/").replace(/\./, "");
+  }).format(new Date(dateString)).replace(/\. /g, "/").replace(/\./, "");
 }
 
 export default function DataPage() {

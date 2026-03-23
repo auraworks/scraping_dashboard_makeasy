@@ -1,7 +1,41 @@
 // Dashboard API Functions
 import { createClient } from "@/lib/supabase/client";
 import type { ApiError } from "@/types/database";
-import type { DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend } from "./keys";
+import type { DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend, DashboardSummary } from "./keys";
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+// Date 객체를 KST 기준으로 변환한 Date를 반환 (로케일 무관)
+function toKST(date: Date): Date {
+  // UTC 기준 밀리초 + KST 오프셋
+  const utcMs = date.getTime() + date.getTimezoneOffset() * 60 * 1000;
+  return new Date(utcMs + KST_OFFSET_MS);
+}
+
+// KST 기준 날짜를 "YYYY-MM-DD"로 반환
+function getKSTDateString(date: Date = new Date()): string {
+  const kst = toKST(date);
+  const y = kst.getFullYear();
+  const m = String(kst.getMonth() + 1).padStart(2, "0");
+  const d = String(kst.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+// KST 기준 오늘 자정을 UTC ISO 문자열로 반환
+function getKSTMidnightISO(date: Date = new Date()): string {
+  const kst = toKST(date);
+  const y = kst.getFullYear();
+  const m = String(kst.getMonth() + 1).padStart(2, "0");
+  const d = String(kst.getDate()).padStart(2, "0");
+  // KST 자정 = UTC 기준 9시간 전
+  const kstMidnight = new Date(Date.UTC(y, kst.getMonth(), d, 0, 0, 0) - KST_OFFSET_MS);
+  return kstMidnight.toISOString();
+}
+
+// UTC 타임스탬프를 KST 기준 시간으로 반환
+function getKSTHour(utcDate: Date): number {
+  return toKST(utcDate).getHours();
+}
 
 // Get total data count and today's count
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -20,11 +54,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     } as ApiError;
   }
 
-  // Get today's count (using collected_at field)
-  // DB에 KST 시간이 UTC로 저장되어 있으므로, 로컬 날짜를 그대로 DB 기준 자정으로 사용
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const todayISO = `${todayStr}T00:00:00.000Z`;
+  // KST 기준 오늘 자정(UTC)부터 카운트
+  const todayISO = getKSTMidnightISO();
 
   const { count: todayCount, error: todayError } = await supabase
     .from("datas")
@@ -45,15 +76,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   };
 }
 
-// Get hourly collection data for today
+// Get hourly collection data for today (KST)
 export async function getHourlyTraffic(): Promise<HourlyTraffic[]> {
   const supabase = createClient();
 
-  // Get today's data with collected_at
-  // DB에 KST 시간이 UTC로 저장되어 있으므로, 로컬 날짜를 그대로 DB 기준 자정으로 사용
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const todayISO = `${todayStr}T00:00:00.000Z`;
+  // KST 기준 오늘 자정(UTC)부터 조회
+  const todayISO = getKSTMidnightISO();
 
   const { data, error } = await supabase
     .from("datas")
@@ -69,7 +97,7 @@ export async function getHourlyTraffic(): Promise<HourlyTraffic[]> {
     } as ApiError;
   }
 
-  // Group by hour
+  // KST 기준으로 시간대별 그룹핑
   const hourCounts: Record<number, number> = {};
   for (let i = 0; i < 24; i++) {
     hourCounts[i] = 0;
@@ -77,16 +105,11 @@ export async function getHourlyTraffic(): Promise<HourlyTraffic[]> {
 
   data?.forEach((item) => {
     if (item.collected_at) {
-      // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
-      const date = new Date(
-        new Date(item.collected_at).getTime() - 9 * 60 * 60 * 1000,
-      );
-      const hour = date.getHours();
-      hourCounts[hour]++;
+      hourCounts[getKSTHour(new Date(item.collected_at))]++;
     }
   });
 
-  // Return in chart format (every 4 hours for 7 data points)
+  // 4시간 단위 7개 구간으로 집계
   const result: HourlyTraffic[] = [];
   const labels = ["00시", "04시", "08시", "12시", "16시", "20시", "24시"];
   for (let i = 0; i < 7; i++) {
@@ -165,60 +188,87 @@ export async function getLastCollectionDate(): Promise<string | null> {
   return data?.collected_at ?? null;
 }
 
-// Get daily collection counts for the past 7 days
-export async function getDailyTrend(): Promise<DailyTrend[]> {
+// 대시보드 요약: total, today, yesterday, daily trend
+// RPC를 사용해 Supabase 기본 1000행 제한 우회
+export async function getDashboardSummary(): Promise<DashboardSummary> {
   const supabase = createClient();
 
-  // 7일 전 00:00 (KST)부터 조회
-  // DB에 KST 시간이 UTC로 저장되어 있으므로, 로컬 날짜를 그대로 DB 기준 자정으로 사용
-  const now = new Date();
-  const start = new Date(now);
-  start.setDate(start.getDate() - 6);
-  const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
-  const startISO = `${startStr}T00:00:00.000Z`;
-
-  const { data, error } = await supabase
+  // 전체 건수
+  const { count: totalCount, error: totalError } = await supabase
     .from("datas")
-    .select("collected_at")
-    .gte("collected_at", startISO)
-    .not("collected_at", "is", null);
+    .select("*", { count: "exact", head: true });
 
-  if (error) {
+  if (totalError) {
     throw {
-      message: error.message,
-      code: error.code,
-      details: error.details,
+      message: totalError.message,
+      code: totalError.code,
+      details: totalError.details,
     } as ApiError;
   }
 
-  // KST 기준으로 일별 그룹핑
-  const dayLabels = ["일", "월", "화", "수", "목", "금", "토"];
-  const counts: Record<string, number> = {};
+  // 최근 7일 범위 계산 (KST 기준)
+  const now = new Date();
+  const trendStartDate = new Date(now);
+  trendStartDate.setDate(trendStartDate.getDate() - 6);
 
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    counts[key] = 0;
+  // trendStart의 KST 자정(UTC)부터 지금까지
+  const startISO = getKSTMidnightISO(trendStartDate);
+
+  // 내일 KST 자정(UTC)을 end로 설정해 오늘 전체 포함
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const endISO = getKSTMidnightISO(tomorrowDate);
+
+  // RPC로 일별 집계 (행 수 제한 없이 정확한 COUNT)
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    "get_daily_collection_counts",
+    { start_date: startISO, end_date: endISO }
+  );
+
+  if (rpcError) {
+    throw {
+      message: rpcError.message,
+      code: rpcError.code,
+      details: rpcError.details,
+    } as ApiError;
   }
 
-  data?.forEach((item) => {
-    if (item.collected_at) {
-      const date = new Date(new Date(item.collected_at).getTime() - 9 * 60 * 60 * 1000);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-      if (key in counts) {
-        counts[key]++;
-      }
-    }
+  // RPC 결과를 날짜 키 맵으로 변환
+  const counts: Record<string, number> = {};
+  (rpcData as { kst_date: string; cnt: number }[] | null)?.forEach((row) => {
+    counts[row.kst_date] = Number(row.cnt);
   });
 
-  return Object.entries(counts).map(([dateKey, count]) => {
-    const [y, m, d] = dateKey.split("-").map(Number);
-    const dayOfWeek = new Date(y, m - 1, d).getDay();
-    return {
-      date: `${String(m).padStart(2, "0")}/${String(d).padStart(2, "0")}`,
+  // 최근 7일 트렌드 빌드
+  const dayLabels = ["일", "월", "화", "수", "목", "금", "토"];
+  const dailyTrend: DailyTrend[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(trendStartDate);
+    d.setDate(d.getDate() + i);
+    const dateKey = getKSTDateString(d);
+    const [y, m, dd] = dateKey.split("-").map(Number);
+    const dayOfWeek = new Date(y, m - 1, dd).getDay();
+    dailyTrend.push({
+      date: `${String(m).padStart(2, "0")}/${String(dd).padStart(2, "0")}`,
       label: dayLabels[dayOfWeek],
-      count,
-    };
-  });
+      count: counts[dateKey] || 0,
+    });
+  }
+
+  const todayCount = dailyTrend[dailyTrend.length - 1]?.count || 0;
+  const yesterdayCount = dailyTrend.length >= 2 ? dailyTrend[dailyTrend.length - 2].count : 0;
+
+  return {
+    totalCount: totalCount || 0,
+    todayCount,
+    yesterdayCount,
+    dailyTrend,
+  };
+}
+
+// Get daily collection counts for the past 7 days (KST)
+export async function getDailyTrend(): Promise<DailyTrend[]> {
+  const summary = await getDashboardSummary();
+  return summary.dailyTrend;
 }

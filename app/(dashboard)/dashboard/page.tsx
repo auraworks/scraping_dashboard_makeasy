@@ -12,38 +12,55 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
-  Filler,
 } from "chart.js";
-import { Line, Doughnut } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 import {
-  useDashboardStats,
-  useHourlyTraffic,
+  useDashboardSummary,
   useSourceDistribution,
   useDataList,
   useLastCollectionDate,
-  useDailyTrend,
 } from "@/components/hooks";
 
 // Chart.js 등록
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
-  Filler
 );
+
+// 막대 위에 값 표시하는 인라인 플러그인
+const barValuePlugin = {
+  id: "barValues",
+  afterDatasetsDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((_dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      meta.data.forEach((bar, index) => {
+        const value = chart.data.datasets[datasetIndex].data[index] as number;
+        if (!value) return;
+        ctx.save();
+        ctx.fillStyle = "#374151";
+        ctx.textAlign = "center";
+        ctx.font = "bold 11px 'Pretendard', sans-serif";
+        ctx.fillText(
+          value.toLocaleString("ko-KR"),
+          bar.x,
+          bar.y - 6
+        );
+        ctx.restore();
+      });
+    });
+  },
+};
 
 // Number formatting utility
 function formatNumber(num: number): string {
@@ -52,22 +69,22 @@ function formatNumber(num: number): string {
 
 export default function Dashboard() {
   // Fetch real data
-  const { data: statsData, isLoading: statsLoading } = useDashboardStats();
-  const { data: hourlyData, isLoading: hourlyLoading } = useHourlyTraffic();
+  const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
   const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
   const { data: recentData, isLoading: recentLoading } = useDataList({ page: 1, pageSize: 5 });
   const { data: lastCollectedAt } = useLastCollectionDate();
-  const { data: dailyTrend = [] } = useDailyTrend();
 
-  // 일별 트렌드 데이터
+  // summary에서 모든 값 파생 (단일 데이터 소스)
+  const totalCount = summary?.totalCount ?? 0;
+  const todayCount = summary?.todayCount ?? 0;
+  const yesterdayCount = summary?.yesterdayCount ?? 0;
+  const dailyTrend = summary?.dailyTrend ?? [];
+
   const dailyCounts = dailyTrend.map((d) => d.count);
   const dailyLabels = dailyTrend.map((d) => d.label);
   const dailyDates = dailyTrend.map((d) => d.date);
   const maxDaily = Math.max(...dailyCounts, 1);
 
-  // 전일 대비 증감 계산
-  const todayCount = dailyCounts[dailyCounts.length - 1] || 0;
-  const yesterdayCount = dailyCounts.length >= 2 ? dailyCounts[dailyCounts.length - 2] : 0;
   const diffFromYesterday = yesterdayCount > 0
     ? ((todayCount - yesterdayCount) / yesterdayCount * 100).toFixed(1)
     : todayCount > 0 ? "+100" : "0";
@@ -77,7 +94,7 @@ export default function Dashboard() {
     {
       title: "총 수집 문서",
       subtitle: "전체 소스 누적 데이터",
-      value: statsLoading ? "..." : formatNumber(statsData?.totalCount || 0),
+      value: summaryLoading ? "..." : formatNumber(totalCount),
       icon: <Database className="w-5 h-5 text-primary-500" />,
       footer: `전일 대비 ${Number(diffFromYesterday) >= 0 ? "+" : ""}${diffFromYesterday}%`,
       footerColor: Number(diffFromYesterday) >= 0 ? "text-emerald-600" : "text-red-500",
@@ -85,7 +102,7 @@ export default function Dashboard() {
     {
       title: "금일 신규 수집",
       subtitle: "실시간 수집 현황",
-      value: statsLoading ? "..." : formatNumber(statsData?.todayCount || 0),
+      value: summaryLoading ? "..." : formatNumber(todayCount),
       icon: <Server className="w-5 h-5 text-blue-500" />,
       footer: `어제 ${formatNumber(yesterdayCount)}건`,
       footerColor: "text-blue-600",
@@ -101,43 +118,45 @@ export default function Dashboard() {
     category: item.category || item.sources?.category || "기타",
   })) || [];
 
-  // 차트 옵션 공통
-  const commonOptions = {
+  // 일별 수집 Bar 차트 옵션
+  const dailyBarOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: { padding: { top: 24 } },
     plugins: {
-      legend: {
-        display: false,
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx: { parsed: { y: number } }) =>
+            `${ctx.parsed.y.toLocaleString("ko-KR")}건`,
+        },
       },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { size: 11 }, color: "#9ca3af" }
+        ticks: { font: { size: 11 }, color: "#9ca3af" },
       },
       y: {
         grid: { color: "#f3f4f6" },
-        ticks: { display: true, font: { size: 11 }, color: "#9ca3af", padding: 8 },
+        ticks: { font: { size: 11 }, color: "#9ca3af", padding: 8 },
         beginAtZero: true,
-      }
-    }
+      },
+    },
   };
 
-  // 1. 수집 트래픽 차트 (Line)
-  const trafficChartData = {
-    labels: hourlyData?.map((d) => d.hour) || ["00시", "04시", "08시", "12시", "16시", "20시", "24시"],
+  // 1. 일별 신규 수집 차트 (Bar)
+  const dailyBarChartData = {
+    labels: dailyTrend.map((d) => [d.date, d.label]),
     datasets: [
       {
-        label: "수집 문서 수",
-        data: hourlyData?.map((d) => d.count) || [0, 0, 0, 0, 0, 0, 0],
-        borderColor: "#1F2C5C",
-        backgroundColor: "rgba(31, 44, 92, 0.05)",
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: "#1F2C5C",
-        pointBorderColor: "#fff",
-        pointBorderWidth: 2,
+        label: "신규 수집 건수",
+        data: dailyCounts,
+        backgroundColor: dailyCounts.map((_, i) =>
+          i === dailyCounts.length - 1 ? "#3B82F6" : "#1F2C5C"
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
       },
     ],
   };
@@ -213,28 +232,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Mini Sparkline */}
-              <div className="mb-3 md:mb-4">
-                <div className="flex items-end gap-1 h-12 md:h-16">
-                  {dailyCounts.map((val, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
-                      <span className="text-[9px] text-gray-400 mb-0.5 font-medium">{formatNumber(val)}</span>
-                      <div
-                        className={`w-full rounded-t-sm opacity-80 hover:opacity-100 transition-opacity ${i === dailyCounts.length - 1 ? "bg-blue-500" : "bg-primary-500"}`}
-                        style={{ height: `${maxDaily > 0 ? (val / maxDaily) * 100 : 0}%` }}
-                      ></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between mt-1">
-                  {dailyDates.map((date, i) => (
-                    <div key={i} className="flex flex-col items-center flex-1">
-                      <span className="text-[9px] text-gray-400">{dailyLabels[i]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="flex items-center gap-2 pt-2 md:pt-3 border-t border-gray-50">
                 <TrendingUp className="w-3 h-3 text-primary-500" />
                 <p className={`text-xs font-semibold ${stat.footerColor}`}>{stat.footer}</p>
@@ -245,24 +242,31 @@ export default function Dashboard() {
 
         {/* Charts Section - Stack vertically on mobile */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Main Traffic Chart */}
+          {/* Daily New Collection Bar Chart */}
           <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
               <div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900">실시간 수집 트래픽</h3>
-                <p className="text-xs text-gray-500 mt-1">시간대별 문서 수집 추이</p>
+                <h3 className="text-base md:text-lg font-bold text-gray-900">일별 신규 수집 현황</h3>
+                <p className="text-xs text-gray-500 mt-1">최근 7일 신규 수집 건수</p>
               </div>
-              <select className="text-xs border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-600 focus:ring-primary-500 focus:border-primary-500 w-fit">
-                <option>오늘</option>
-                <option>어제</option>
-                <option>지난 7일</option>
-              </select>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <span className="inline-block w-3 h-3 rounded-sm bg-primary-500"></span>이전
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <span className="inline-block w-3 h-3 rounded-sm bg-blue-500"></span>오늘
+                </span>
+              </div>
             </div>
             <div className="h-48 md:h-64">
-              {hourlyLoading ? (
+              {summaryLoading ? (
                 <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
               ) : (
-                <Line data={trafficChartData} options={commonOptions} />
+                <Bar
+                  data={dailyBarChartData}
+                  options={dailyBarOptions}
+                  plugins={[barValuePlugin]}
+                />
               )}
             </div>
           </div>

@@ -6,6 +6,7 @@ export const dashboardKeys = {
   sourceDistribution: () => [...dashboardKeys.all, "sourceDistribution"] as const,
   lastCollection: () => [...dashboardKeys.all, "lastCollection"] as const,
   dailyTrend: () => [...dashboardKeys.all, "dailyTrend"] as const,
+  summary: () => [...dashboardKeys.all, "summary"] as const,
 };
 
 // Dashboard Stats Type
@@ -31,4 +32,12 @@ export interface DailyTrend {
   date: string;   // "MM/DD" format
   label: string;  // "월", "화", etc.
   count: number;
+}
+
+// Dashboard Summary (combines stats + daily trend in one query)
+export interface DashboardSummary {
+  totalCount: number;
+  todayCount: number;
+  yesterdayCount: number;
+  dailyTrend: DailyTrend[];
 }

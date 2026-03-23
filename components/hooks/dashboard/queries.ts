@@ -1,7 +1,7 @@
 // Dashboard Query Hooks
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { dashboardKeys, DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend } from "./keys";
-import { getDashboardStats, getHourlyTraffic, getSourceDistribution, getLastCollectionDate, getDailyTrend } from "./apis";
+import { dashboardKeys, DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend, DashboardSummary } from "./keys";
+import { getDashboardStats, getHourlyTraffic, getSourceDistribution, getLastCollectionDate, getDailyTrend, getDashboardSummary } from "./apis";
 import type { ApiError } from "@/types/database";
 
 // Use Dashboard Stats
@@ -70,6 +70,20 @@ export function useDailyTrend(
   return useQuery({
     queryKey: dashboardKeys.dailyTrend(),
     queryFn: getDailyTrend,
+    ...options,
+  });
+}
+
+// Use Dashboard Summary (combined stats + trend)
+export function useDashboardSummary(
+  options?: Omit<
+    UseQueryOptions<DashboardSummary, ApiError, DashboardSummary, ReturnType<typeof dashboardKeys.summary>>,
+    "queryKey" | "queryFn"
+  >
+) {
+  return useQuery({
+    queryKey: dashboardKeys.summary(),
+    queryFn: getDashboardSummary,
     ...options,
   });
 }
