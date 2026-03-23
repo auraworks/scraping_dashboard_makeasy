@@ -40,19 +40,19 @@ ChartJS.register(
 // 막대 위에 값 표시하는 인라인 플러그인
 const barValuePlugin = {
   id: "barValues",
-  afterDatasetsDraw(chart: ChartJS) {
+  afterDatasetsDraw(chart: any) {
     const { ctx } = chart;
-    chart.data.datasets.forEach((_dataset, datasetIndex) => {
+    chart.data.datasets.forEach((_dataset: any, datasetIndex: number) => {
       const meta = chart.getDatasetMeta(datasetIndex);
-      meta.data.forEach((bar, index) => {
-        const value = chart.data.datasets[datasetIndex].data[index] as number;
-        if (!value) return;
+      meta.data.forEach((bar: any, index: number) => {
+        const value = chart.data.datasets[datasetIndex].data[index];
+        if (value === null || value === undefined) return;
         ctx.save();
         ctx.fillStyle = "#374151";
         ctx.textAlign = "center";
         ctx.font = "bold 11px 'Pretendard', sans-serif";
         ctx.fillText(
-          value.toLocaleString("ko-KR"),
+          (value as number).toLocaleString("ko-KR"),
           bar.x,
           bar.y - 6
         );
@@ -127,8 +127,10 @@ export default function Dashboard() {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (ctx: { parsed: { y: number } }) =>
-            `${ctx.parsed.y.toLocaleString("ko-KR")}건`,
+          label: (ctx: any) => {
+            const val = ctx.parsed.y;
+            return val !== null ? `${val.toLocaleString("ko-KR")}건` : "";
+          },
         },
       },
     },
@@ -200,13 +202,13 @@ export default function Dashboard() {
             <p className="text-white text-sm md:text-base font-semibold">
               {lastCollectedAt
                 ? new Intl.DateTimeFormat("ko-KR", {
-                    timeZone: "Asia/Seoul",
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(new Date(lastCollectedAt))
+                  timeZone: "Asia/Seoul",
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }).format(new Date(lastCollectedAt))
                 : "-"}
             </p>
           </div>
