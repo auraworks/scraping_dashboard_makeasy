@@ -77,7 +77,7 @@ export default function LogDetailPage() {
   }
 
   return (
-    <div className="p-8 w-full max-w-4xl mx-auto">
+    <div className="p-8 w-full ">
       {/* 헤더 섹션 */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">로그 상세 정보</h1>

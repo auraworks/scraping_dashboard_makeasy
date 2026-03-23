@@ -75,7 +75,7 @@ export async function getData(
   }
 
   const { data, error, count } = await query
-    .order("published_date", { ascending: false, nullsFirst: false })
+    .order("collected_at", { ascending: false, nullsFirst: false })
     .range(from, to);
 
   if (error) {
