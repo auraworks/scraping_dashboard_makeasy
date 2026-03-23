@@ -693,9 +693,8 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <ListOrdered className="w-5 h-5 text-primary-500" /> 동작
                     설정 (Actions)
                   </FormLabel>
-                  <p className="text-xs text-gray-400 ml-1">
-                    페이지네이션 클릭 등 순차적으로 수행할 동작의 XPath 또는 CSS
-                    선택자를 입력하세요.
+                  <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
+                    XPATH 혹은 CSS를 넣어주세요.(가급적 NEXT버튼)
                   </p>
                 </div>
 
@@ -851,11 +850,10 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                   <div className="flex flex-col gap-1">
                     <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
                       <Hash className="w-5 h-5 text-primary-500" /> 아티클
-                      클래스 설정 (Article Class)
+                      클래스 설정 
                     </FormLabel>
-                    <p className="text-xs text-gray-400 ml-1">
-                      아티클(게시물)을 식별하기 위한 CSS 클래스 이름을
-                      입력하세요.
+                    <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
+                      클래스 네임을 넣어주세요
                     </p>
                   </div>
 
@@ -906,11 +904,10 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <div className="flex flex-col gap-1">
                       <FormLabel className="text-base font-extrabold text-gray-900 ml-1 flex items-center gap-2">
                         <Box className="w-5 h-5 text-primary-500" /> 컨텐츠 영역
-                        설정 (Content Class)
+                        설정 
                       </FormLabel>
-                      <p className="text-xs text-gray-400 ml-1">
-                        상세페이지에서 본문 내용이 위치한 영역의 XPath 또는 CSS
-                        선택자를 입력하세요.
+                      <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
+                        XPATH혹은 CSS를 넣어주세요
                       </p>
                     </div>
                     <FormField
