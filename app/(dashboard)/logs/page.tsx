@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Loader2, Info, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -160,7 +160,18 @@ export default function LogsPage() {
               ) : (
                 logs.map((log) => {
                   const level = log.level?.toLowerCase() || "";
-                  const isSuccess = level !== "error" && level !== "failure";
+                  const isError = ["error", "failure", "fail", "failed", "err"].includes(level);
+                  const isWarning = ["warning", "warn"].includes(level);
+                  const isInfo = ["info"].includes(level);
+
+                  const badgeConfig = isError
+                    ? { className: "bg-red-50 text-red-600 border-red-100", icon: <XCircle className="w-3.5 h-3.5" />, label: level.toUpperCase() }
+                    : isWarning
+                    ? { className: "bg-yellow-50 text-yellow-600 border-yellow-100", icon: <AlertTriangle className="w-3.5 h-3.5" />, label: level.toUpperCase() }
+                    : isInfo
+                    ? { className: "bg-blue-50 text-blue-600 border-blue-100", icon: <Info className="w-3.5 h-3.5" />, label: "INFO" }
+                    : { className: "bg-primary-50 text-primary-600 border-primary-100", icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: level ? level.toUpperCase() : "SUCCESS" };
+
                   const sourceName =
                     log.sources?.name || `#${log.source_id ?? "-"}`;
                   const errorMessage = log.message || "-";
@@ -189,23 +200,16 @@ export default function LogsPage() {
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Badge
-                            className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${isSuccess
-                              ? "bg-primary-50 text-primary-600 border-primary-100"
-                              : "bg-primary-900 text-white border-primary-900"
-                              }`}
+                            className={`font-bold px-2.5 py-1 rounded-lg shadow-none border flex items-center gap-1.5 ${badgeConfig.className}`}
                           >
-                            {isSuccess ? (
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            ) : (
-                              <XCircle className="w-3.5 h-3.5" />
-                            )}
-                            {isSuccess ? (isSuccess ? "SUCCESS" : "INFO") : "FAIL"}
+                            {badgeConfig.icon}
+                            {badgeConfig.label}
                           </Badge>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div
-                          className={`text-sm font-medium line-clamp-2 group-hover:line-clamp-none transition-all ${isSuccess ? "text-gray-500" : "text-rose-500"}`}
+                          className={`text-sm font-medium line-clamp-2 group-hover:line-clamp-none transition-all ${isError ? "text-rose-500" : isWarning ? "text-yellow-600" : "text-gray-500"}`}
                         >
                           {errorMessage}
                         </div>
