@@ -22,7 +22,9 @@ export async function getLogs(
   }
 
   if (filters?.failOnly) {
-    query = query.or("level.ilike.error,level.ilike.failure,level.ilike.fail,level.ilike.failed,level.ilike.err");
+    query = query
+      .not("level", "ilike", "info")
+      .not("level", "ilike", "success");
   }
 
   const { data, error, count } = await query.range(from, to);
