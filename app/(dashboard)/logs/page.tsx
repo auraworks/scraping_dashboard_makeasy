@@ -39,11 +39,7 @@ export default function LogsPage() {
   const totalPages = logsData?.totalPages || 1;
 
   const formatDate = (dateString: string) => {
-    // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
-    // (예: 실제 17시인 시간이 DB에는 17시 UTC로 저장되어 UI에서 02시(다음날)로 보이는 현상 방지)
-    const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
-
-    return date.toLocaleString("ko-KR", {
+    return new Date(dateString).toLocaleString("ko-KR", {
       timeZone: "Asia/Seoul",
       year: "2-digit",
       month: "2-digit",
@@ -170,7 +166,7 @@ export default function LogsPage() {
                     ? { className: "bg-yellow-50 text-yellow-600 border-yellow-100", icon: <AlertTriangle className="w-3.5 h-3.5" />, label: level.toUpperCase() }
                     : isInfo
                     ? { className: "bg-blue-50 text-blue-600 border-blue-100", icon: <Info className="w-3.5 h-3.5" />, label: "INFO" }
-                    : { className: "bg-primary-50 text-primary-600 border-primary-100", icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: level ? level.toUpperCase() : "SUCCESS" };
+                    : { className: "bg-green-50 text-green-600 border-green-100", icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: level ? level.toUpperCase() : "SUCCESS" };
 
                   const sourceName =
                     log.sources?.name || `#${log.source_id ?? "-"}`;

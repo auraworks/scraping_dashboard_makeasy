@@ -91,7 +91,7 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                         <div className="grid grid-cols-1 gap-y-8">
                             {isEdit && (
                                 <div className="space-y-2">
-                                    <FormLabel className="text-base font-bold text-gray-400 ml-1">현재 유형명</FormLabel>
+                                    <FormLabel className="text-base font-bold text-gray-400 ml-1">유형 ID</FormLabel>
                                     <Input
                                         disabled
                                         value={initialData?.id || "N/A"}
@@ -106,7 +106,7 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-base font-bold text-gray-800 ml-1">
-                                            {isEdit ? "새 유형명" : "유형명"}
+                                            {isEdit ? "이름" : "유형명"}
                                         </FormLabel>
                                         <FormControl>
                                             <Input
