@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   TrendingUp,
   ChevronLeft,
@@ -68,10 +68,13 @@ function formatNumber(num: number): string {
 }
 
 export default function Dashboard() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
   // Fetch real data
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
   const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
-  const { data: recentData, isLoading: recentLoading } = useDataList({ page: 1, pageSize: 5 });
+  const { data: recentData, isLoading: recentLoading } = useDataList({ page: currentPage, pageSize });
   const { data: lastCollectedAt } = useLastCollectionDate();
 
   // summary에서 모든 값 파생 (단일 데이터 소스)
@@ -357,13 +360,23 @@ export default function Dashboard() {
 
           <div className="flex items-center justify-end gap-3 mt-4">
             <span className="text-xs text-gray-400">
-              1-{Math.min(5, recentData?.total || 0)} of {recentData?.total || 0} items
+              {recentData?.total
+                ? `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, recentData.total)} of ${recentData.total} items`
+                : "0 items"}
             </span>
             <div className="flex gap-1">
-              <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-50">
+              <button
+                onClick={() => setCurrentPage((p) => p - 1)}
+                disabled={currentPage === 1}
+                className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <button className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500">
+              <button
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={!recentData?.total || currentPage * pageSize >= recentData.total}
+                className="p-1.5 border border-gray-200 rounded hover:bg-gray-50 transition-all text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>

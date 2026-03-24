@@ -1,0 +1,243 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774326200616,
+  "projectRoot": "D:\\000.FrontEnd\\206.universial_crawling_data_front",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "latest",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.0.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.0.0",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint ."
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "components",
+      "lib",
+      "public",
+      "scripts"
+    ],
+    "gitBranches": {
+      "defaultBranch": "master",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 6,
+      "lastAccessed": 1774326200521,
+      "keyFiles": [
+        "favicon.ico",
+        "globals.css",
+        "layout.tsx",
+        "opengraph-image.png",
+        "page.tsx"
+      ]
+    },
+    "components": {
+      "path": "components",
+      "purpose": "UI components",
+      "fileCount": 12,
+      "lastAccessed": 1774326200525,
+      "keyFiles": [
+        "auth-button.tsx",
+        "deploy-button.tsx",
+        "env-var-warning.tsx",
+        "forgot-password-form.tsx",
+        "hero.tsx"
+      ]
+    },
+    "hooks": {
+      "path": "hooks",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1774326200549,
+      "keyFiles": []
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1774326200551,
+      "keyFiles": [
+        "utils.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1774326200551,
+      "keyFiles": [
+        "admin.jpg",
+        "logo.png",
+        "logo_full.png"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1774326200552,
+      "keyFiles": [
+        "import-authors.js"
+      ]
+    },
+    "types": {
+      "path": "types",
+      "purpose": "Type definitions",
+      "fileCount": 1,
+      "lastAccessed": 1774326200553,
+      "keyFiles": [
+        "database.ts"
+      ]
+    },
+    "app\\api": {
+      "path": "app\\api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1774326200553,
+      "keyFiles": []
+    },
+    "components\\data": {
+      "path": "components\\data",
+      "purpose": "Data files",
+      "fileCount": 1,
+      "lastAccessed": 1774326200555,
+      "keyFiles": [
+        "DataForm.tsx"
+      ]
+    },
+    "hooks\\data": {
+      "path": "hooks\\data",
+      "purpose": "Data files",
+      "fileCount": 0,
+      "lastAccessed": 1774326200559,
+      "keyFiles": []
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "app\\(dashboard)\\dashboard\\page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1774326257171,
+      "type": "file"
+    },
+    {
+      "path": "components\\ui\\LoginForm\\login-form.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1774326688271,
+      "type": "file"
+    },
+    {
+      "path": "middleware.ts",
+      "accessCount": 2,
+      "lastAccessed": 1774326504740,
+      "type": "file"
+    },
+    {
+      "path": "proxy.ts",
+      "accessCount": 2,
+      "lastAccessed": 1774326594886,
+      "type": "file"
+    },
+    {
+      "path": "app\\(auth)\\auth\\layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1774326668565,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks",
+      "accessCount": 1,
+      "lastAccessed": 1774326232353,
+      "type": "directory"
+    },
+    {
+      "path": "components\\hooks\\datas\\queries.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774326234532,
+      "type": "file"
+    },
+    {
+      "path": "lib\\supabase\\server.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774326353334,
+      "type": "file"
+    },
+    {
+      "path": "app\\(auth)\\auth\\login\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774326628796,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\useToast.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774326632531,
+      "type": "file"
+    },
+    {
+      "path": "components\\ui\\Toast.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774326655853,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

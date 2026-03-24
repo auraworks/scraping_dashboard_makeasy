@@ -18,6 +18,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/hooks/useToast";
 
 // 로그인 스키마 (더미 - 모든 입력 허용)
 const loginSchema = z.object({
@@ -31,7 +33,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const toast = useToast();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -44,17 +46,22 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setAuthError(null);
     try {
-      // 더미 로그인 - 아무 값이나 입력하면 성공
-      await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        toast.error("로그인 실패", error.message);
+        return;
+      }
+
+      toast.success("로그인 성공", "대시보드로 이동합니다.");
       router.push("/dashboard");
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "로그인 중 오류가 발생했습니다.";
-      setAuthError(errorMessage);
+    } catch {
+      toast.error("로그인 실패", "로그인 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -73,11 +80,6 @@ export function LoginForm() {
       {/* 로그인 폼 */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {authError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-              {authError}
-            </div>
-          )}
           <FormField
             control={form.control}
             name="email"
