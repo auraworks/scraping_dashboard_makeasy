@@ -365,6 +365,7 @@ export function DataForm({
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel className="text-base font-bold text-gray-800 ml-1">확장 데이터 (JSON)</FormLabel>
+                    <p className="text-xs text-gray-400 ml-1">* 본 내용과 관련된 외부 URL 등 추가 참조 정보를 JSON 형식으로 기록합니다.</p>
                     <FormControl>
                       <div className="relative">
                         <div className="absolute top-4 right-4 z-10">
@@ -387,7 +388,7 @@ export function DataForm({
           </div>
 
           {/* 1뎁스 설정 */}
-          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+          {/* <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-blue-50 rounded-lg">
                 <Box className="w-5 h-5 text-blue-500" />
@@ -411,7 +412,7 @@ export function DataForm({
                 </FormItem>
               )}
             />
-          </div>
+          </div> */}
 
           {/* 타이틀 및 원문 링크 */}
           <div className="flex items-center justify-between pt-4">
