@@ -7,6 +7,7 @@ import type {
   SourceDistribution,
   DailyTrend,
   DashboardSummary,
+  TrendItem,
 } from "./keys";
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -278,4 +279,139 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 export async function getDailyTrend(): Promise<DailyTrend[]> {
   const summary = await getDashboardSummary();
   return summary.dailyTrend;
+}
+
+// Get weekly collection counts (last 4 weeks)
+export async function getWeeklyTrend(): Promise<TrendItem[]> {
+  const supabase = createClient();
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - 27);
+
+  const startISO = getKSTMidnightISO(startDate);
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const endISO = getKSTMidnightISO(tomorrowDate);
+
+  const { data: rpcData, error } = await supabase.rpc("get_daily_collection_counts", {
+    start_date: startISO,
+    end_date: endISO,
+  });
+
+  if (error) throw { message: error.message, code: error.code, details: error.details } as ApiError;
+
+  const counts: Record<string, number> = {};
+  (rpcData as { kst_date: string; cnt: number }[] | null)?.forEach((row) => {
+    counts[row.kst_date] = Number(row.cnt);
+  });
+
+  const weeks: TrendItem[] = [];
+  for (let w = 3; w >= 0; w--) {
+    let weekCount = 0;
+    const weekEndDate = new Date(now);
+    weekEndDate.setDate(weekEndDate.getDate() - w * 7);
+    const weekStartDate = new Date(weekEndDate);
+    weekStartDate.setDate(weekStartDate.getDate() - 6);
+
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(weekStartDate);
+      day.setDate(day.getDate() + d);
+      weekCount += counts[getKSTDateString(day)] || 0;
+    }
+
+    const m = String(weekEndDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(weekEndDate.getDate()).padStart(2, "0");
+    weeks.push({ label: `~${m}/${dd}`, count: weekCount });
+  }
+
+  return weeks;
+}
+
+// 정보원 국가별 분포
+export async function getSourceCountByCountry(): Promise<SourceDistribution[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("sources").select("country");
+  if (error) throw { message: error.message, code: error.code, details: error.details } as ApiError;
+
+  const counts: Record<string, number> = {};
+  data?.forEach((row) => {
+    const key = (row.country as string) || "미분류";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// 정보원 유형1별 분포
+export async function getSourceCountByCat1(): Promise<SourceDistribution[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("sources").select("category");
+  if (error) throw { message: error.message, code: error.code, details: error.details } as ApiError;
+
+  const counts: Record<string, number> = {};
+  data?.forEach((row) => {
+    const cat = Array.isArray(row.category) ? (row.category[0] as string) : null;
+    const key = cat || "미분류";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// 정보원 유형2별 분포
+export async function getSourceCountByCat2(): Promise<SourceDistribution[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("sources").select("category");
+  if (error) throw { message: error.message, code: error.code, details: error.details } as ApiError;
+
+  const counts: Record<string, number> = {};
+  data?.forEach((row) => {
+    const cat = Array.isArray(row.category) ? (row.category[1] as string) : null;
+    const key = cat || "미분류";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// Get monthly collection counts (last 12 months)
+export async function getMonthlyTrend(): Promise<TrendItem[]> {
+  const supabase = createClient();
+  const now = new Date();
+  const kstNow = toKST(now);
+
+  const startDate = new Date(now);
+  startDate.setMonth(startDate.getMonth() - 11);
+  startDate.setDate(1);
+
+  const startISO = getKSTMidnightISO(startDate);
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const endISO = getKSTMidnightISO(tomorrowDate);
+
+  const { data: rpcData, error } = await supabase.rpc("get_daily_collection_counts", {
+    start_date: startISO,
+    end_date: endISO,
+  });
+
+  if (error) throw { message: error.message, code: error.code, details: error.details } as ApiError;
+
+  const monthCounts: Record<string, number> = {};
+  (rpcData as { kst_date: string; cnt: number }[] | null)?.forEach((row) => {
+    const monthKey = row.kst_date.substring(0, 7);
+    monthCounts[monthKey] = (monthCounts[monthKey] || 0) + Number(row.cnt);
+  });
+
+  const months: TrendItem[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(kstNow.getFullYear(), kstNow.getMonth() - i, 1);
+    const m = d.getMonth() + 1;
+    const key = `${d.getFullYear()}-${String(m).padStart(2, "0")}`;
+    months.push({ label: `${String(m).padStart(2, "0")}월`, count: monthCounts[key] || 0 });
+  }
+
+  return months;
 }

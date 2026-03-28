@@ -7,6 +7,11 @@ export const dashboardKeys = {
   lastCollection: () => [...dashboardKeys.all, "lastCollection"] as const,
   dailyTrend: () => [...dashboardKeys.all, "dailyTrend"] as const,
   summary: () => [...dashboardKeys.all, "summary"] as const,
+  weeklyTrend: () => [...dashboardKeys.all, "weeklyTrend"] as const,
+  monthlyTrend: () => [...dashboardKeys.all, "monthlyTrend"] as const,
+  sourceByCountry: () => [...dashboardKeys.all, "sourceByCountry"] as const,
+  sourceByCat1: () => [...dashboardKeys.all, "sourceByCat1"] as const,
+  sourceByCat2: () => [...dashboardKeys.all, "sourceByCat2"] as const,
 };
 
 // Dashboard Stats Type
@@ -40,4 +45,10 @@ export interface DashboardSummary {
   todayCount: number;
   yesterdayCount: number;
   dailyTrend: DailyTrend[];
+}
+
+// Trend Item (주간/월간 공통)
+export interface TrendItem {
+  label: string;
+  count: number;
 }

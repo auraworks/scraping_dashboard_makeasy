@@ -1,7 +1,7 @@
 // Dashboard Query Hooks
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { dashboardKeys, DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend, DashboardSummary } from "./keys";
-import { getDashboardStats, getHourlyTraffic, getSourceDistribution, getLastCollectionDate, getDailyTrend, getDashboardSummary } from "./apis";
+import { dashboardKeys, DashboardStats, HourlyTraffic, SourceDistribution, DailyTrend, DashboardSummary, TrendItem } from "./keys";
+import { getDashboardStats, getHourlyTraffic, getSourceDistribution, getLastCollectionDate, getDailyTrend, getDashboardSummary, getWeeklyTrend, getMonthlyTrend, getSourceCountByCountry, getSourceCountByCat1, getSourceCountByCat2 } from "./apis";
 import type { ApiError } from "@/types/database";
 
 // Use Dashboard Stats
@@ -85,5 +85,42 @@ export function useDashboardSummary(
     queryKey: dashboardKeys.summary(),
     queryFn: getDashboardSummary,
     ...options,
+  });
+}
+
+// Use Weekly Trend (last 4 weeks)
+export function useWeeklyTrend() {
+  return useQuery({
+    queryKey: dashboardKeys.weeklyTrend(),
+    queryFn: getWeeklyTrend,
+  });
+}
+
+// Use Monthly Trend (last 12 months)
+export function useMonthlyTrend() {
+  return useQuery({
+    queryKey: dashboardKeys.monthlyTrend(),
+    queryFn: getMonthlyTrend,
+  });
+}
+
+export function useSourceCountByCountry() {
+  return useQuery({
+    queryKey: dashboardKeys.sourceByCountry(),
+    queryFn: getSourceCountByCountry,
+  });
+}
+
+export function useSourceCountByCat1() {
+  return useQuery({
+    queryKey: dashboardKeys.sourceByCat1(),
+    queryFn: getSourceCountByCat1,
+  });
+}
+
+export function useSourceCountByCat2() {
+  return useQuery({
+    queryKey: dashboardKeys.sourceByCat2(),
+    queryFn: getSourceCountByCat2,
   });
 }

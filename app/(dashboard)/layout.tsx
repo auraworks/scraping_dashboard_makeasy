@@ -15,7 +15,7 @@ export default function DashboardLayout({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
+    <div className="h-screen overflow-hidden bg-stone-50 flex">
       {/* Drawer for mobile */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         {/* Mobile Header - visible on md and below */}
@@ -34,13 +34,13 @@ export default function DashboardLayout({
       </Drawer>
 
       {/* Desktop Sidebar - hidden on md and below */}
-      <div className="hidden md:block">
+      <div className="hidden md:block h-full">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:p-8 pt-16 md:pt-8 w-full">
-        <div className="bg-white rounded-lg shadow-sm border border-contents min-h-[calc(100vh-4rem)] md:min-h-0">
+      <main className="flex-1 md:p-8 pt-16 md:pt-8 w-full h-full overflow-y-auto">
+        <div className="bg-white rounded-lg shadow-sm border border-contents min-h-full">
           <Suspense fallback={<div className="p-8 text-gray-500">Loading...</div>}>
             {children}
           </Suspense>

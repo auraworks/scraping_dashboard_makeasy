@@ -536,6 +536,7 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         {...field}
                       />
                     </FormControl>
+                    <p className="text-xs text-gray-400 ml-1">* 형식 : 공식 명칭 (원문명, 약어)</p>
                     <FormMessage className="text-xs font-medium" />
                   </FormItem>
                 )}
@@ -709,8 +710,8 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                     <ListOrdered className="w-5 h-5 text-primary-500" /> 동작
                     설정 (Actions)
                   </FormLabel>
-                  <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
-                    XPATH 혹은 CSS를 넣어주세요.(가급적 NEXT버튼)
+                  <p className="text-xs text-gray-500 ml-1 leading-relaxed">
+                    페이지 이동(다음 페이지) 버튼의 선택자를 설정합니다. HTML에서 Next 버튼을 찾아 XPath 또는 CSS로 입력 후 <span className="font-bold text-primary-500">+</span> 버튼으로 추가하세요. 무한 스크롤 방식의 사이트는 추가하지 않아도 됩니다.
                   </p>
                 </div>
 
@@ -868,8 +869,8 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                       <Hash className="w-5 h-5 text-primary-500" /> 아티클
                       클래스 설정 
                     </FormLabel>
-                    <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
-                      클래스 네임을 넣어주세요
+                    <p className="text-xs text-gray-500 ml-1 leading-relaxed">
+                      HTML 내에서 아티클(기사/게시글)은 동일한 클래스명을 가진 반복 요소로 존재합니다. 해당 반복 요소의 클래스명을 입력하면 크롤러가 이를 기준으로 아티클 목록을 수집합니다.
                     </p>
                   </div>
 
@@ -922,8 +923,8 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         <Box className="w-5 h-5 text-primary-500" /> 컨텐츠 영역
                         설정 
                       </FormLabel>
-                      <p className="text-xs text-gray-400 ml-1 text-red-500 font-bold">
-                        XPATH혹은 CSS를 넣어주세요
+                      <p className="text-xs text-gray-500 ml-1 leading-relaxed">
+                        아티클 상세 페이지로 이동했을 때, 본문 내용이 포함된 영역을 XPath 또는 CSS 선택자로 지정합니다. 해당 영역을 기준으로 본문 텍스트를 추출합니다.
                       </p>
                     </div>
                     <FormField

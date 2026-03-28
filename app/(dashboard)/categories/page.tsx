@@ -273,7 +273,7 @@ export default function CategoriesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">유형 관리</h1>
         <p className="text-gray-500 text-lg">
-          유형1을 선택하면 하위 유형2를 관리할 수 있습니다.
+          데이터 수집 대상의 카테고리 및 유형을 관리합니다.
         </p>
       </div>
 

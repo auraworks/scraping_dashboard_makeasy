@@ -21,10 +21,21 @@ import {
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
   useDashboardSummary,
-  useSourceDistribution,
   useDataList,
   useLastCollectionDate,
+  useWeeklyTrend,
+  useMonthlyTrend,
+  useSourceCountByCountry,
+  useSourceCountByCat1,
+  useSourceCountByCat2,
 } from "@/components/hooks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Chart.js 등록
 ChartJS.register(
@@ -67,15 +78,38 @@ function formatNumber(num: number): string {
   return num.toLocaleString("ko-KR");
 }
 
+function generateColors(count: number): string[] {
+  const base = [
+    "#1F2C5C", "#324682", "#4C63A6", "#6E84C7", "#90A4D8",
+    "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE",
+    "#0F172A", "#1E3A5F", "#2D5986", "#3D7BAD", "#4D9DD4",
+  ];
+  return Array.from({ length: count }, (_, i) => base[i % base.length]);
+}
+
+function buildDoughnutData(items: { source: string; count: number }[]) {
+  const labels = items.map((d) => d.source);
+  const data = items.map((d) => d.count);
+  return {
+    labels,
+    datasets: [{ data, backgroundColor: generateColors(items.length), borderWidth: 0 }],
+  };
+}
+
 export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const [periodType, setPeriodType] = useState<"daily" | "weekly" | "monthly">("daily");
 
   // Fetch real data
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
-  const { data: sourceData, isLoading: sourceLoading } = useSourceDistribution();
   const { data: recentData, isLoading: recentLoading } = useDataList({ page: currentPage, pageSize });
+  const { data: sourceByCountry = [], isLoading: countryLoading } = useSourceCountByCountry();
+  const { data: sourceByCat1 = [], isLoading: cat1Loading } = useSourceCountByCat1();
+  const { data: sourceByCat2 = [], isLoading: cat2Loading } = useSourceCountByCat2();
   const { data: lastCollectedAt } = useLastCollectionDate();
+  const { data: weeklyTrend = [], isLoading: weeklyLoading } = useWeeklyTrend();
+  const { data: monthlyTrend = [], isLoading: monthlyLoading } = useMonthlyTrend();
 
   // summary에서 모든 값 파생 (단일 데이터 소스)
   const totalCount = summary?.totalCount ?? 0;
@@ -150,15 +184,40 @@ export default function Dashboard() {
     },
   };
 
-  // 1. 일별 신규 수집 차트 (Bar)
-  const dailyBarChartData = {
-    labels: dailyTrend.map((d) => [d.date, d.label]),
+  // 현재 선택된 기간에 따른 차트 데이터
+  const currentChartData = (() => {
+    if (periodType === "weekly") {
+      return {
+        labels: weeklyTrend.map((d) => d.label),
+        counts: weeklyTrend.map((d) => d.count),
+        isLoading: weeklyLoading,
+        subtitle: "최근 4주 수집 건수",
+      };
+    }
+    if (periodType === "monthly") {
+      return {
+        labels: monthlyTrend.map((d) => d.label),
+        counts: monthlyTrend.map((d) => d.count),
+        isLoading: monthlyLoading,
+        subtitle: "최근 12개월 수집 건수",
+      };
+    }
+    return {
+      labels: dailyTrend.map((d) => [d.date, d.label]),
+      counts: dailyCounts,
+      isLoading: summaryLoading,
+      subtitle: "최근 7일 신규 수집 건수",
+    };
+  })();
+
+  const currentBarChartData = {
+    labels: currentChartData.labels as string[],
     datasets: [
       {
-        label: "신규 수집 건수",
-        data: dailyCounts,
-        backgroundColor: dailyCounts.map((_, i) =>
-          i === dailyCounts.length - 1 ? "#3B82F6" : "#1F2C5C"
+        label: "수집 건수",
+        data: currentChartData.counts,
+        backgroundColor: currentChartData.counts.map((_, i) =>
+          i === currentChartData.counts.length - 1 ? "#3B82F6" : "#1F2C5C"
         ),
         borderRadius: 6,
         borderSkipped: false,
@@ -166,26 +225,9 @@ export default function Dashboard() {
     ],
   };
 
-  // 3. 소스별 점유율 (Doughnut)
-  const sourceLabels = sourceData?.slice(0, 5).map((d) => d.source) || ["데이터 없음"];
-  const sourceCounts = sourceData?.slice(0, 5).map((d) => d.count) || [1];
-
-  const sourceChartData = {
-    labels: sourceLabels,
-    datasets: [
-      {
-        data: sourceCounts,
-        backgroundColor: [
-          "#1F2C5C", // Primary
-          "#324682",
-          "#4C63A6",
-          "#6E84C7",
-          "#E2E8F0", // Light Gray for 'Others'
-        ],
-        borderWidth: 0,
-      },
-    ],
-  };
+  const countryChartData = buildDoughnutData(sourceByCountry);
+  const cat1ChartData = buildDoughnutData(sourceByCat1);
+  const cat2ChartData = buildDoughnutData(sourceByCat2);
 
   return (
     <div className="min-h-screen w-full">
@@ -222,7 +264,7 @@ export default function Dashboard() {
         <div className="absolute bottom-0 left-0 w-48 md:w-64 h-48 md:h-64 bg-blue-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20"></div>
       </div>
 
-      <div className="px-4 md:px-6 pb-8">
+      <div className="px-4 md:px-6 h-full">
         {/* KPI Cards - 2 Cards Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {stats.map((stat, idx) => (
@@ -247,28 +289,41 @@ export default function Dashboard() {
 
         {/* Charts Section - Stack vertically on mobile */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Daily New Collection Bar Chart */}
+          {/* 수집문건 현황 Bar Chart */}
           <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
               <div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900">일별 신규 수집 현황</h3>
-                <p className="text-xs text-gray-500 mt-1">최근 7일 신규 수집 건수</p>
+                <h3 className="text-base md:text-lg font-bold text-gray-900">수집문건 현황</h3>
+                <p className="text-xs text-gray-500 mt-1">{currentChartData.subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <span className="inline-block w-3 h-3 rounded-sm bg-primary-500"></span>이전
-                </span>
-                <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <span className="inline-block w-3 h-3 rounded-sm bg-blue-500"></span>오늘
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-primary-500"></span>이전
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-blue-500"></span>
+                    {periodType === "daily" ? "오늘" : periodType === "weekly" ? "이번주" : "이번달"}
+                  </span>
+                </div>
+                <Select value={periodType} onValueChange={(v) => setPeriodType(v as "daily" | "weekly" | "monthly")}>
+                  <SelectTrigger className="w-[100px] h-9 bg-white border-gray-200 rounded-xl shadow-sm text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">일간</SelectItem>
+                    <SelectItem value="weekly">주간</SelectItem>
+                    <SelectItem value="monthly">월간</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="h-48 md:h-64">
-              {summaryLoading ? (
+              {currentChartData.isLoading ? (
                 <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
               ) : (
                 <Bar
-                  data={dailyBarChartData}
+                  data={currentBarChartData}
                   options={dailyBarOptions}
                   plugins={[barValuePlugin]}
                 />
@@ -276,34 +331,51 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Source Distribution Chart */}
+          {/* 정보원 보유 현황 - 3개 도넛 차트 */}
           <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-            <div className="flex flex-col h-full items-center justify-center">
-              <div className="text-center mb-4 md:mb-8">
-                <h3 className="text-base md:text-lg font-bold text-gray-900">데이터 소스 점유율</h3>
-                <p className="text-xs text-gray-500 mt-1">채널별 수집 비중</p>
-              </div>
-              <div className="w-full h-56 md:h-80 flex items-center justify-center">
-                {sourceLoading ? (
-                  <div className="flex items-center justify-center h-full text-gray-400">로딩 중...</div>
-                ) : (
-                  <Doughnut data={sourceChartData} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'bottom',
-                        labels: {
-                          usePointStyle: true,
-                          boxWidth: 8,
-                          padding: 15,
-                          font: { size: 10 }
-                        }
-                      }
-                    }
-                  }} />
-                )}
-              </div>
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-base md:text-lg font-bold text-gray-900">정보원 보유 현황</h3>
+              <p className="text-xs text-gray-500 mt-1">국가별 · 유형1별 · 유형2별 분포</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { title: "국가별", data: countryChartData, isLoading: countryLoading },
+                { title: "유형1별", data: cat1ChartData, isLoading: cat1Loading },
+                { title: "유형2별", data: cat2ChartData, isLoading: cat2Loading },
+              ].map(({ title, data, isLoading }) => (
+                <div key={title} className="flex flex-col items-center">
+                  <p className="text-xs font-bold text-gray-600 mb-2">{title}</p>
+                  <div className="w-full h-40 md:h-48">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center h-full text-gray-400 text-xs">로딩 중...</div>
+                    ) : (
+                      <Doughnut
+                        data={data}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: "bottom",
+                              labels: {
+                                usePointStyle: true,
+                                boxWidth: 6,
+                                padding: 8,
+                                font: { size: 9 },
+                              },
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: (ctx: any) => ` ${ctx.label}: ${ctx.parsed}개`,
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
