@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls -la \\\"D:\\\\000.FrontEnd\\\\206.universial_crawling_data_front\\\\app\\\\(auth)\\\\auth\\\\\\\"\"}",
+  "error": "Exit code 2\n/usr/bin/bash: eval: line 1: unexpected EOF while looking for matching `\"'",
+  "timestamp": "2026-03-28T07:20:21.454Z",
+  "retry_count": 1
+}

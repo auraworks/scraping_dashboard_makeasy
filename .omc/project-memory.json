@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1774326200616,
+  "lastScanned": 1774682235774,
   "projectRoot": "D:\\000.FrontEnd\\206.universial_crawling_data_front",
   "techStack": {
     "languages": [
@@ -80,7 +80,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1774326200521,
+      "lastAccessed": 1774682235720,
       "keyFiles": [
         "favicon.ico",
         "globals.css",
@@ -93,7 +93,7 @@
       "path": "components",
       "purpose": "UI components",
       "fileCount": 12,
-      "lastAccessed": 1774326200525,
+      "lastAccessed": 1774682235734,
       "keyFiles": [
         "auth-button.tsx",
         "deploy-button.tsx",
@@ -106,14 +106,14 @@
       "path": "hooks",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1774326200549,
+      "lastAccessed": 1774682235735,
       "keyFiles": []
     },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
       "fileCount": 1,
-      "lastAccessed": 1774326200551,
+      "lastAccessed": 1774682235736,
       "keyFiles": [
         "utils.ts"
       ]
@@ -122,7 +122,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 3,
-      "lastAccessed": 1774326200551,
+      "lastAccessed": 1774682235736,
       "keyFiles": [
         "admin.jpg",
         "logo.png",
@@ -133,7 +133,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1774326200552,
+      "lastAccessed": 1774682235737,
       "keyFiles": [
         "import-authors.js"
       ]
@@ -142,7 +142,7 @@
       "path": "types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1774326200553,
+      "lastAccessed": 1774682235737,
       "keyFiles": [
         "database.ts"
       ]
@@ -151,14 +151,14 @@
       "path": "app\\api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1774326200553,
+      "lastAccessed": 1774682235738,
       "keyFiles": []
     },
     "components\\data": {
       "path": "components\\data",
       "purpose": "Data files",
       "fileCount": 1,
-      "lastAccessed": 1774326200555,
+      "lastAccessed": 1774682235739,
       "keyFiles": [
         "DataForm.tsx"
       ]
@@ -167,75 +167,99 @@
       "path": "hooks\\data",
       "purpose": "Data files",
       "fileCount": 0,
-      "lastAccessed": 1774326200559,
+      "lastAccessed": 1774682235739,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
-      "path": "app\\(dashboard)\\dashboard\\page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1774326257171,
-      "type": "file"
-    },
-    {
-      "path": "components\\ui\\LoginForm\\login-form.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1774326688271,
-      "type": "file"
-    },
-    {
-      "path": "middleware.ts",
+      "path": "components\\sources\\SourceForm.tsx",
       "accessCount": 2,
-      "lastAccessed": 1774326504740,
+      "lastAccessed": 1774682390785,
       "type": "file"
     },
     {
-      "path": "proxy.ts",
-      "accessCount": 2,
-      "lastAccessed": 1774326594886,
-      "type": "file"
-    },
-    {
-      "path": "app\\(auth)\\auth\\layout.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1774326668565,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks",
+      "path": "app\\(dashboard)\\sources\\[id]\\page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1774326232353,
-      "type": "directory"
+      "lastAccessed": 1774682368767,
+      "type": "file"
     },
     {
-      "path": "components\\hooks\\datas\\queries.ts",
+      "path": "app\\(dashboard)\\sources\\page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1774326234532,
+      "lastAccessed": 1774682368935,
+      "type": "file"
+    },
+    {
+      "path": "lib\\supabase\\client.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774682369386,
       "type": "file"
     },
     {
       "path": "lib\\supabase\\server.ts",
       "accessCount": 1,
-      "lastAccessed": 1774326353334,
+      "lastAccessed": 1774682369619,
+      "type": "file"
+    },
+    {
+      "path": "components\\store\\authStore.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774682369917,
+      "type": "file"
+    },
+    {
+      "path": "components\\layout\\Sidebar\\Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774682373783,
       "type": "file"
     },
     {
       "path": "app\\(auth)\\auth\\login\\page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1774326628796,
+      "lastAccessed": 1774682374351,
       "type": "file"
     },
     {
-      "path": "components\\hooks\\useToast.ts",
+      "path": "app\\(auth)\\auth\\register\\page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1774326632531,
+      "lastAccessed": 1774682374436,
       "type": "file"
     },
     {
-      "path": "components\\ui\\Toast.tsx",
+      "path": "app\\(dashboard)\\sources\\new\\page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1774326655853,
+      "lastAccessed": 1774682374531,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 1,
+      "lastAccessed": 1774682378499,
+      "type": "file"
+    },
+    {
+      "path": "lib\\supabase\\proxy.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774682379230,
+      "type": "file"
+    },
+    {
+      "path": "app\\layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774682391412,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774682408614,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 1,
+      "lastAccessed": 1774682429779,
       "type": "file"
     }
   ],
