@@ -173,21 +173,153 @@
   },
   "hotPaths": [
     {
+      "path": "app\\(dashboard)\\sources\\page.tsx",
+      "accessCount": 21,
+      "lastAccessed": 1774699479935,
+      "type": "file"
+    },
+    {
       "path": "components\\sources\\SourceForm.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1774682390785,
+      "accessCount": 19,
+      "lastAccessed": 1774699115932,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\apis.ts",
+      "accessCount": 16,
+      "lastAccessed": 1774698966422,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\data\\page.tsx",
+      "accessCount": 16,
+      "lastAccessed": 1774699480520,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\categories\\page.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1774692648188,
+      "type": "file"
+    },
+    {
+      "path": "types\\database.ts",
+      "accessCount": 14,
+      "lastAccessed": 1774698921305,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 10,
+      "lastAccessed": 1774692729889,
+      "type": "directory"
+    },
+    {
+      "path": "components\\hooks\\categories\\apis.ts",
+      "accessCount": 10,
+      "lastAccessed": 1774694074307,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\categories\\queries.ts",
+      "accessCount": 6,
+      "lastAccessed": 1774694074340,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\categories\\keys.ts",
+      "accessCount": 6,
+      "lastAccessed": 1774694074394,
+      "type": "file"
+    },
+    {
+      "path": "components\\categories\\CategoryForm.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1774693257862,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\keys.ts",
+      "accessCount": 5,
+      "lastAccessed": 1774694052081,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\categories\\mutations.ts",
+      "accessCount": 5,
+      "lastAccessed": 1774694074422,
       "type": "file"
     },
     {
       "path": "app\\(dashboard)\\sources\\[id]\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1774682368767,
+      "accessCount": 5,
+      "lastAccessed": 1774699058935,
       "type": "file"
     },
     {
-      "path": "app\\(dashboard)\\sources\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1774682368935,
+      "path": "components\\ui\\command.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1774692857264,
+      "type": "file"
+    },
+    {
+      "path": "components\\layout\\Sidebar\\Sidebar.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1774690797019,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\accounts\\mutations.ts",
+      "accessCount": 3,
+      "lastAccessed": 1774690871496,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\sources\\new\\page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1774694051865,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\mutations.ts",
+      "accessCount": 3,
+      "lastAccessed": 1774694051978,
+      "type": "file"
+    },
+    {
+      "path": "components\\accounts\\AccountForm.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1774691181607,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1774692714056,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\queries.ts",
+      "accessCount": 2,
+      "lastAccessed": 1774692722412,
+      "type": "file"
+    },
+    {
+      "path": "components\\ui\\popover.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1774692836432,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\sources\\index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1774694052175,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\categories\\index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1774694074438,
       "type": "file"
     },
     {
@@ -209,12 +341,6 @@
       "type": "file"
     },
     {
-      "path": "components\\layout\\Sidebar\\Sidebar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1774682373783,
-      "type": "file"
-    },
-    {
       "path": "app\\(auth)\\auth\\login\\page.tsx",
       "accessCount": 1,
       "lastAccessed": 1774682374351,
@@ -224,12 +350,6 @@
       "path": "app\\(auth)\\auth\\register\\page.tsx",
       "accessCount": 1,
       "lastAccessed": 1774682374436,
-      "type": "file"
-    },
-    {
-      "path": "app\\(dashboard)\\sources\\new\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1774682374531,
       "type": "file"
     },
     {
@@ -251,15 +371,105 @@
       "type": "file"
     },
     {
-      "path": "components\\hooks\\sources\\index.ts",
+      "path": "lib\\supabase\\admin.ts",
       "accessCount": 1,
-      "lastAccessed": 1774682408614,
+      "lastAccessed": 1774690638518,
       "type": "file"
     },
     {
-      "path": "package.json",
+      "path": "app\\api\\admin\\users\\route.ts",
       "accessCount": 1,
-      "lastAccessed": 1774682429779,
+      "lastAccessed": 1774690658126,
+      "type": "file"
+    },
+    {
+      "path": "app\\api\\admin\\users\\[id]\\route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774690666004,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\accounts\\keys.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774690668186,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\accounts\\apis.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774690676362,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\accounts\\queries.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774690688262,
+      "type": "file"
+    },
+    {
+      "path": "components\\hooks\\accounts\\index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774690694185,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\accounts\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774690775340,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\accounts\\new\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774690783598,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\accounts\\[id]\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774690791904,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\categories\\new\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774691509764,
+      "type": "file"
+    },
+    {
+      "path": "app\\(dashboard)\\categories\\[id]\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774691509840,
+      "type": "file"
+    },
+    {
+      "path": "components\\ui\\select.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1774692720646,
+      "type": "file"
+    },
+    {
+      "path": "types",
+      "accessCount": 1,
+      "lastAccessed": 1774692727397,
+      "type": "directory"
+    },
+    {
+      "path": "C:\\Users\\Jay\\.claude\\plans\\cosmic-fluttering-peach.md",
+      "accessCount": 1,
+      "lastAccessed": 1774692802800,
+      "type": "file"
+    },
+    {
+      "path": "app\\api",
+      "accessCount": 1,
+      "lastAccessed": 1774694064024,
+      "type": "directory"
+    },
+    {
+      "path": "app\\api\\ec2\\reboot\\route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1774694074469,
       "type": "file"
     }
   ],

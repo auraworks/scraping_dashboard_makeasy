@@ -25,6 +25,7 @@ export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
     { id: "data", label: "데이터 관리", href: "/data" },
     { id: "categories", label: "유형 관리", href: "/categories" },
     { id: "logs", label: "로그 관리", href: "/logs" },
+    { id: "accounts", label: "계정 관리", href: "/accounts" },
     { id: "settings", label: "시스템 설정", href: "/settings" },
   ];
 
@@ -53,7 +54,9 @@ export default function Sidebar({ onClose, showLogo = true }: SidebarProps) {
       {/* 헤더 */}
       {showLogo && (
         <div className="p-6">
-          <Image src="/logo_full.png" alt="Logo" width={200} height={50} />
+          <Link href="/dashboard">
+            <Image src="/logo_full.png" alt="Logo" width={200} height={50} />
+          </Link>
         </div>
       )}
 

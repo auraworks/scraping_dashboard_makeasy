@@ -4,18 +4,25 @@ import { categoryKeys } from "./keys";
 import type { Category } from "./apis";
 import type { ApiError } from "@/types/database";
 
+interface AddCategoryInput {
+  name: string;
+  parentId?: string | null;
+}
+
 // Add Category Mutation
 export function useAddCategory(
   options?: Omit<
-    UseMutationOptions<Category, ApiError, string>,
+    UseMutationOptions<Category, ApiError, AddCategoryInput>,
     "mutationFn" | "onSuccess"
   >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: insertCategory,
+    mutationFn: ({ name, parentId }: AddCategoryInput) =>
+      insertCategory(name, parentId),
     onSuccess: () => {
+      // Invalidate all category list queries (all parentId variants)
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
     },
     ...options,
@@ -40,7 +47,7 @@ export function useRenameCategory(
   });
 }
 
-// Delete Category Mutation
+// Delete Category Mutation (CASCADE removes children)
 export function useDeleteCategory(
   options?: Omit<
     UseMutationOptions<void, ApiError, string>,
@@ -52,6 +59,7 @@ export function useDeleteCategory(
   return useMutation({
     mutationFn: deleteCategory,
     onSuccess: () => {
+      // Invalidate all lists so both 유형1 and 유형2 refresh
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
     },
     ...options,

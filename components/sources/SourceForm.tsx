@@ -218,8 +218,26 @@ const parseContentClassFromDB = (
 
 export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const router = useRouter();
-  const { data: categories = [], isLoading: isCategoriesLoading } =
-    useCategories();
+  // 유형1 (최상위 카테고리)
+  const { data: cat1List = [], isLoading: isCat1Loading } = useCategories(null);
+  // 유형2 (선택된 유형1의 하위 카테고리)
+  const [selectedCat1Id, setSelectedCat1Id] = React.useState<string | null>(null);
+  const { data: cat2List = [] } = useCategories(
+    selectedCat1Id ?? undefined,
+    { enabled: !!selectedCat1Id }
+  );
+
+  // 기존 데이터에서 유형1 복원
+  React.useEffect(() => {
+    if (initialData?.category && cat1List.length > 0 && !selectedCat1Id) {
+      const cat1Names = cat1List.map(c => c.name);
+      const matchedName = initialData.category.find(name => cat1Names.includes(name));
+      if (matchedName) {
+        const cat1 = cat1List.find(c => c.name === matchedName);
+        if (cat1) setSelectedCat1Id(cat1.id);
+      }
+    }
+  }, [initialData?.category, cat1List]);
 
   // ========== 독립 State 관리 (form과 분리) ==========
   // types: 카테고리 배열
@@ -277,21 +295,27 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   });
 
   // ========== 핸들러 함수들 ==========
-  const handleTypeSelect = (value: string) => {
-    if (value && !types.includes(value)) {
-      setTypes([...types, value]);
-    }
+  const handleCat1Select = (cat1Id: string) => {
+    const cat1 = cat1List.find(c => c.id === cat1Id);
+    if (!cat1) return;
+    setSelectedCat1Id(cat1Id);
+    setTypes([cat1.name]);
+  };
+
+  const handleCat2Select = (cat2Name: string) => {
+    const cat1Names = cat1List.map(c => c.name);
+    const cat1InTypes = types.find(t => cat1Names.includes(t));
+    setTypes(cat1InTypes ? [cat1InTypes, cat2Name] : [cat2Name]);
   };
 
   const removeType = (typeToRemove: string) => {
+    const cat1Names = cat1List.map(c => c.name);
+    if (cat1Names.includes(typeToRemove)) {
+      setSelectedCat1Id(null);
+      setTypes([]);
+      return;
+    }
     setTypes(types.filter((t) => t !== typeToRemove));
-  };
-
-  const updateType = (index: number, newValue: string) => {
-    if (!newValue.trim()) return;
-    const newTypes = [...types];
-    newTypes[index] = newValue.trim();
-    setTypes(newTypes);
   };
 
   const addAction = () => {
@@ -546,72 +570,64 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                       유형
                     </FormLabel>
                     <div className="space-y-3">
-                      <Select onValueChange={handleTypeSelect}>
-                        <FormControl>
-                          <SelectTrigger className="h-16 w-full rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
-                            <SelectValue placeholder="유형 선택" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                          {isCategoriesLoading ? (
-                            <SelectItem
-                              value="_loading"
-                              disabled
-                              className="py-3 text-base text-gray-400"
-                            >
-                              로딩 중...
-                            </SelectItem>
-                          ) : categories.length === 0 ? (
-                            <SelectItem
-                              value="_empty"
-                              disabled
-                              className="py-3 text-base text-gray-400"
-                            >
-                              등록된 유형이 없습니다
-                            </SelectItem>
-                          ) : (
-                            categories.map((cat) => (
-                              <SelectItem
-                                key={cat.id}
-                                value={cat.name}
-                                className="py-3 text-base"
-                              >
-                                {cat.name}
+                      <div className="flex gap-3">
+                        {/* 유형1 선택 */}
+                        <Select onValueChange={handleCat1Select} value={selectedCat1Id || ""}>
+                          <FormControl>
+                            <SelectTrigger className="h-16 flex-1 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6">
+                              <SelectValue placeholder="유형1 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                            {isCat1Loading ? (
+                              <SelectItem value="_loading" disabled className="py-3 text-base text-gray-400">
+                                로딩 중...
                               </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                            ) : cat1List.length === 0 ? (
+                              <SelectItem value="_empty" disabled className="py-3 text-base text-gray-400">
+                                등록된 유형이 없습니다
+                              </SelectItem>
+                            ) : (
+                              cat1List.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id} className="py-3 text-base">
+                                  {cat.name}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+
+                        {/* 유형2 선택 */}
+                        <Select
+                          onValueChange={handleCat2Select}
+                          disabled={!selectedCat1Id}
+                          value={types.find(t => !cat1List.some(c => c.name === t)) ?? ""}
+                        >
+                          <SelectTrigger
+                            className="h-16 flex-1 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!selectedCat1Id}
+                          >
+                            <SelectValue placeholder={selectedCat1Id ? "유형2 선택" : "유형1 먼저 선택"} />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                            {cat2List.length === 0 ? (
+                              <SelectItem value="_empty" disabled className="py-3 text-base text-gray-400">
+                                하위 유형이 없습니다
+                              </SelectItem>
+                            ) : (
+                              cat2List.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.name} className="py-3 text-base">
+                                  {cat.name}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                       <p className="text-xs text-gray-400 ml-1 leading-relaxed">
-                        해당 정보원의 매체 성격을 선택해 주세요. (예: 뉴스,
-                        블로그, 카페 등) 여러 개의 유형을 선택하여 추가할 수
-                        있습니다.
+                        유형1을 먼저 선택한 후, 세부 유형(유형2)을 선택할 수 있습니다.
                       </p>
-                      {types.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {types.map((type, idx) => (
-                            <Badge
-                              key={`${type}-${idx}`}
-                              variant="secondary"
-                              className="bg-primary-50 text-primary-600 border-none px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 group hover:bg-primary-100 transition-colors"
-                            >
-                              <input
-                                autoFocus={false}
-                                value={type}
-                                onChange={(e) => updateType(idx, e.target.value)}
-                                className="bg-transparent border-none outline-none focus:ring-0 p-0 w-24 text-sm font-bold text-primary-600"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeType(type)}
-                                className="text-primary-400 hover:text-primary-600 transition-colors"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
                     </div>
                     <FormMessage className="text-xs font-medium" />
                   </FormItem>

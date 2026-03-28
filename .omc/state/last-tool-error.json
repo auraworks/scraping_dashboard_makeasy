@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"ls -la \\\"D:\\\\000.FrontEnd\\\\206.universial_crawling_data_front\\\\app\\\\(auth)\\\\auth\\\\\\\"\"}",
-  "error": "Exit code 2\n/usr/bin/bash: eval: line 1: unexpected EOF while looking for matching `\"'",
-  "timestamp": "2026-03-28T07:20:21.454Z",
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"D:\\\\000.FrontEnd\\\\206.universial_crawling_data_front\\\\components\\\\sources\\\\SourceForm.tsx\"}",
+  "error": "File content (12385 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.",
+  "timestamp": "2026-03-28T11:57:39.149Z",
   "retry_count": 1
 }

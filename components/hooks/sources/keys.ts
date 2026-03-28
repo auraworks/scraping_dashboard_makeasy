@@ -13,6 +13,7 @@ export const sourceKeys = {
 export interface SourceFilters {
   country?: Country | "all";
   category?: string;
+  categoryParent?: string; // 유형1 ID: 해당 유형1의 모든 하위 유형2를 필터링
   search?: string;
   page?: number;
   pageSize?: number;

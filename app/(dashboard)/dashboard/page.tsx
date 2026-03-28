@@ -309,7 +309,7 @@ export default function Dashboard() {
         </div>
 
         {/* Table Section - Full Width */}
-        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
+        {/* <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
             <div>
               <h2 className="text-base md:text-lg font-bold text-gray-900">최근 수집된 주요 이슈</h2>
@@ -381,7 +381,7 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

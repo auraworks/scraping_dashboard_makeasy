@@ -34,20 +34,13 @@ import {
 import { useDataList, useCountries, useSourcesForFilter, type DataFilters } from "@/components/hooks/datas";
 import type { DataWithSource, Country } from "@/types/database";
 
-const PAGE_SIZE = 10;
-
 function formatDate(dateString: string | null): string {
   if (!dateString) return "-";
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    year: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(dateString)).replace(/\. /g, "/").replace(/\./, "");
+  const d = new Date(dateString);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 export default function DataPage() {
@@ -59,6 +52,7 @@ export default function DataPage() {
   const [selectedSourceId, setSelectedSourceId] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // 국가 목록 조회 (sources에서 가져옴)
   const { data: countries = [] } = useCountries();
@@ -70,14 +64,14 @@ export default function DataPage() {
   const filters: DataFilters = useMemo(() => {
     const result: DataFilters = {
       page: currentPage,
-      pageSize: PAGE_SIZE,
+      pageSize,
     };
     if (search) result.search = search;
     if (selectedCountry !== "all") result.country = selectedCountry;
     if (selectedSourceId !== "all") result.sourceId = Number(selectedSourceId);
     if (selectedDate) result.publishedAt = format(selectedDate, "yyyy-MM-dd");
     return result;
-  }, [search, selectedCountry, selectedSourceId, selectedDate, currentPage]);
+  }, [search, selectedCountry, selectedSourceId, selectedDate, currentPage, pageSize]);
 
   // 데이터 조회
   const { data: response, isLoading, isError, error } = useDataList(filters);
@@ -264,26 +258,26 @@ export default function DataPage() {
           <table className="w-full border-collapse table-fixed min-w-[1000px]">
             <thead>
               <tr className="bg-gray-50/30 border-b border-gray-100">
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[8%]">
                   ID
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   국가
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[30%]">
-                  제목
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
+                  유형
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
                   정보원
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[9%]">
-                  유형
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
-                  수집일
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[34%]">
+                  제목
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
                   발행일
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
+                  수집일
                 </th>
               </tr>
             </thead>
@@ -330,16 +324,6 @@ export default function DataPage() {
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors truncate">
-                        {item.title ?? "-"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="text-sm text-gray-600 font-medium">
-                        {item.sources?.name ?? "-"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
                       <div className="flex flex-wrap gap-1">
                         {(() => {
                           const cats =
@@ -355,7 +339,11 @@ export default function DataPage() {
                           return list.map((cat, i) => (
                             <span
                               key={i}
-                              className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary-50 text-primary-600"
+                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                i === 0
+                                  ? "bg-primary-500 text-white"
+                                  : "bg-primary-50 text-primary-600"
+                              }`}
                             >
                               {cat}
                             </span>
@@ -365,12 +353,22 @@ export default function DataPage() {
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="text-sm text-gray-600 font-medium">
-                        {formatDate(item.collected_at)}
+                        {item.sources?.name ?? "-"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors truncate">
+                        {item.title ?? "-"}
                       </div>
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="text-sm text-gray-600 font-medium">
                         {formatDate(item.published_date)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="text-sm text-gray-600 font-medium">
+                        {formatDate(item.collected_at)}
                       </div>
                     </td>
                   </tr>
@@ -382,87 +380,117 @@ export default function DataPage() {
 
         {/* 페이지네이션 섹션 */}
         <div className="px-6 py-4 border-t border-gray-100 flex flex-row items-center justify-between gap-4 bg-gray-50/20">
-          <div className="text-sm text-gray-500">
-            총 {response?.total ?? 0}개 중 {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, response?.total ?? 0)}개 표시
+          <div className="flex items-center gap-3">
+            {/* <div className="text-sm text-gray-500">
+              총 {response?.total ?? 0}개 중 {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, response?.total ?? 0)}개 표시
+            </div> */}
+            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[120px] h-9 bg-white border-gray-200 rounded-xl shadow-sm text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10개씩 보기</SelectItem>
+                <SelectItem value="100">100개씩 보기</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {totalPages > 1 && (
-            <Pagination className="mx-0 w-auto">
-              <PaginationContent className="gap-2">
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); if (currentPage > 1) handlePageChange(currentPage - 1); }}
-                    className={cn(
-                      "rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all",
-                      currentPage === 1 && "pointer-events-none opacity-50"
-                    )}
-                  />
-                </PaginationItem>
-                {paginationItems[0] > 1 && (
-                  <>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(1); }}
-                        className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                    {paginationItems[0] > 2 && (
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )}
-                  </>
-                )}
-                {paginationItems.map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
+            <div className="flex items-center gap-3">
+              <Pagination className="mx-0 w-auto">
+                <PaginationContent className="gap-2">
+                  <PaginationItem>
+                    <PaginationPrevious
                       href="#"
-                      onClick={(e) => { e.preventDefault(); handlePageChange(page); }}
-                      isActive={currentPage === page}
+                      onClick={(e) => { e.preventDefault(); if (currentPage > 1) handlePageChange(currentPage - 1); }}
                       className={cn(
-                        "w-10 h-10 rounded-xl font-bold transition-all",
-                        currentPage === page
-                          ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
-                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        "rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all",
+                        currentPage === 1 && "pointer-events-none opacity-50"
                       )}
-                    >
-                      {page}
-                    </PaginationLink>
+                    />
                   </PaginationItem>
-                ))}
-                {paginationItems[paginationItems.length - 1] < totalPages && (
-                  <>
-                    {paginationItems[paginationItems.length - 1] < totalPages - 1 && (
+                  {paginationItems[0] > 1 && (
+                    <>
                       <PaginationItem>
-                        <PaginationEllipsis />
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => { e.preventDefault(); handlePageChange(1); }}
+                          className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
+                        >
+                          1
+                        </PaginationLink>
                       </PaginationItem>
-                    )}
-                    <PaginationItem>
+                      {paginationItems[0] > 2 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                    </>
+                  )}
+                  {paginationItems.map((page) => (
+                    <PaginationItem key={page}>
                       <PaginationLink
                         href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(totalPages); }}
-                        className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
+                        onClick={(e) => { e.preventDefault(); handlePageChange(page); }}
+                        isActive={currentPage === page}
+                        className={cn(
+                          "w-10 h-10 rounded-xl font-bold transition-all",
+                          currentPage === page
+                            ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
+                            : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        )}
                       >
-                        {totalPages}
+                        {page}
                       </PaginationLink>
                     </PaginationItem>
-                  </>
-                )}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) handlePageChange(currentPage + 1); }}
-                    className={cn(
-                      "rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all",
-                      currentPage === totalPages && "pointer-events-none opacity-50"
-                    )}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                  ))}
+                  {paginationItems[paginationItems.length - 1] < totalPages && (
+                    <>
+                      {paginationItems[paginationItems.length - 1] < totalPages - 1 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => { e.preventDefault(); handlePageChange(totalPages); }}
+                          className="w-10 h-10 rounded-xl bg-white border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) handlePageChange(currentPage + 1); }}
+                      className={cn(
+                        "rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all",
+                        currentPage === totalPages && "pointer-events-none opacity-50"
+                      )}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  key={currentPage}
+                  defaultValue={currentPage}
+                  className="w-16 h-9 text-center rounded-xl border-gray-200 bg-white shadow-sm text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const v = Number((e.target as HTMLInputElement).value);
+                      if (v >= 1 && v <= totalPages) setCurrentPage(v);
+                    }
+                  }}
+                />
+                <span>/ {totalPages}</span>
+              </div>
+            </div>
           )}
         </div>
       </div>

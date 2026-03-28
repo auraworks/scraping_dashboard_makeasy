@@ -3,12 +3,10 @@
 import React, { useState } from "react";
 import {
   Search,
-  Filter,
-  MoreHorizontal,
   Plus,
-  Download,
-  FileSpreadsheet,
   Loader2,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,7 +26,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useSourceList } from "@/components/hooks/sources";
@@ -136,8 +146,20 @@ export default function SourcesPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCat1, setSelectedCat1] = useState<string>("all");
+  const [selectedCat2, setSelectedCat2] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [countryOpen, setCountryOpen] = useState(false);
+
+  // 유형1 목록 (최상위)
+  const { data: cat1List = [] } = useCategories(null);
+  const cat1NameSet = new Set(cat1List.map(c => c.name));
+  // 유형2 목록 (선택된 유형1의 하위)
+  const { data: cat2List = [] } = useCategories(
+    selectedCat1 !== "all" ? selectedCat1 : undefined,
+    { enabled: selectedCat1 !== "all" }
+  );
 
   const {
     data: sourcesData,
@@ -147,27 +169,31 @@ export default function SourcesPage() {
     search: searchTerm || undefined,
     country:
       selectedCountry !== "all" ? (selectedCountry as Country) : undefined,
-    category: selectedCategory !== "all" ? selectedCategory : undefined,
+    category: selectedCat2 !== "all" ? selectedCat2 : undefined,
+    categoryParent:
+      selectedCat1 !== "all" && selectedCat2 === "all"
+        ? selectedCat1
+        : undefined,
     page,
-    pageSize: 10,
+    pageSize,
   });
-
-  const { data: categories = [] } = useCategories();
 
   const sources = sourcesData?.data || [];
   const totalPages = sourcesData?.totalPages || 1;
   const total = sourcesData?.total || 0;
 
   const formatDate = (dateString: string) => {
-    // DB에 KST 시간이 UTC로 잘못 저장되어 있는 경우를 대비하여 9시간을 뺍니다.
     const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
 
-    return date.toLocaleDateString("ko-KR", {
-      timeZone: "Asia/Seoul",
-      year: "2-digit",
-      month: "2-digit",
-      day: "2-digit",
-    }).replace(/\. /g, "/").replace(/\./, "");
+    return date
+      .toLocaleDateString("ko-KR", {
+        timeZone: "Asia/Seoul",
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\. /g, "/")
+      .replace(/\./, "");
   };
 
   const handleSearch = (value: string) => {
@@ -178,17 +204,25 @@ export default function SourcesPage() {
   const handleCountryChange = (value: string) => {
     setSelectedCountry(value);
     setPage(1);
+    setCountryOpen(false);
   };
 
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
+  const handleCat1Change = (value: string) => {
+    setSelectedCat1(value);
+    setSelectedCat2("all"); // 유형1 변경 시 유형2 초기화
+    setPage(1);
+  };
+
+  const handleCat2Change = (value: string) => {
+    setSelectedCat2(value);
     setPage(1);
   };
 
   const handleReset = () => {
     setSearchTerm("");
     setSelectedCountry("all");
-    setSelectedCategory("all");
+    setSelectedCat1("all");
+    setSelectedCat2("all");
     setPage(1);
   };
 
@@ -209,7 +243,8 @@ export default function SourcesPage() {
             onClick={() => router.push("/sources/new")}
             className="px-5 py-6 bg-primary-500 text-white rounded-xl text-base font-bold hover:bg-primary-600 transition-all shadow-lg shadow-primary-200"
           >
-            <Plus className="w-5 h-5 mr-2" />새 정보원 추가
+            <Plus className="w-5 h-5 mr-2" />
+            새 정보원 추가
           </Button>
         </div>
       </div>
@@ -232,33 +267,96 @@ export default function SourcesPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {/* 국가 검색 Combobox */}
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-[140px] h-11 justify-between bg-white border-gray-200 rounded-xl shadow-sm font-medium text-sm hover:bg-gray-50"
+                  >
+                    {selectedCountry === "all"
+                      ? "모든 국가"
+                      : selectedCountry}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="국가 검색..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>검색 결과 없음</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="__all__"
+                          onSelect={() => handleCountryChange("all")}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              selectedCountry === "all"
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }`}
+                          />
+                          모든 국가
+                        </CommandItem>
+                        {COUNTRIES.map((country) => (
+                          <CommandItem
+                            key={country}
+                            value={country}
+                            onSelect={() => handleCountryChange(country)}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                selectedCountry === country
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                            />
+                            {country}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* 유형1 드롭다운 */}
               <Select
-                value={selectedCountry}
-                onValueChange={handleCountryChange}
+                value={selectedCat1}
+                onValueChange={handleCat1Change}
               >
-                <SelectTrigger className="w-[125px] h-11 bg-white border-gray-200 rounded-xl shadow-sm">
-                  <SelectValue placeholder="모든 국가" />
+                <SelectTrigger className="w-[130px] h-11 bg-white border-gray-200 rounded-xl shadow-sm">
+                  <SelectValue placeholder="모든 유형1" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  <SelectItem value="all">모든 국가</SelectItem>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
+                <SelectContent>
+                  <SelectItem value="all">모든 유형1</SelectItem>
+                  {cat1List.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
+              {/* 유형2 드롭다운 (유형1 선택 시 활성화) */}
               <Select
-                value={selectedCategory}
-                onValueChange={handleCategoryChange}
+                value={selectedCat2}
+                onValueChange={handleCat2Change}
+                disabled={selectedCat1 === "all"}
               >
-                <SelectTrigger className="w-[120px] h-11 bg-white border-gray-200 rounded-xl shadow-sm">
-                  <SelectValue placeholder="모든 유형" />
+                <SelectTrigger className="w-[130px] h-11 bg-white border-gray-200 rounded-xl shadow-sm disabled:opacity-50">
+                  <SelectValue placeholder={
+                    selectedCat1 === "all"
+                      ? "유형1을 먼저 선택"
+                      : "모든 유형2"
+                  } />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">모든 유형</SelectItem>
-                  {categories.map((cat) => (
+                  <SelectItem value="all">모든 유형2</SelectItem>
+                  {cat2List.map((cat) => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}
                     </SelectItem>
@@ -279,7 +377,7 @@ export default function SourcesPage() {
 
         {/* 실제 테이블 */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse table-fixed min-w-[900px]">
+          <table className="w-full border-collapse table-fixed min-w-[1000px]">
             <thead>
               <tr className="bg-gray-50/30 border-b border-gray-100">
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[5%]">
@@ -297,8 +395,11 @@ export default function SourcesPage() {
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%]">
                   URL
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[15%]">
-                  유형
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[8%]">
+                  유형1
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[12%]">
+                  유형2
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[10%]">
                   수집 주기
@@ -311,7 +412,7 @@ export default function SourcesPage() {
             <tbody className="bg-white divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center">
+                  <td colSpan={9} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
                       <span className="text-gray-400 font-medium">
@@ -322,7 +423,7 @@ export default function SourcesPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center">
+                  <td colSpan={9} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-red-500 font-medium">
                         데이터를 불러오는 중 오류가 발생했습니다.
@@ -332,7 +433,7 @@ export default function SourcesPage() {
                 </tr>
               ) : sources.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center">
+                  <td colSpan={9} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-gray-400 font-medium">
                         등록된 정보원이 없습니다.
@@ -378,8 +479,24 @@ export default function SourcesPage() {
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="flex flex-wrap gap-1">
-                        {Array.isArray(source.category) && source.category.length > 0 ? (
-                          source.category.map((t, i) => (
+                        {Array.isArray(source.category) && source.category.some(c => cat1NameSet.has(c)) ? (
+                          source.category.filter(c => cat1NameSet.has(c)).map((t, i) => (
+                            <Badge
+                              key={i}
+                              className="bg-primary-500 text-white border-none px-2 py-0.5 rounded-lg text-[10px] font-bold"
+                            >
+                              {t}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-gray-300 text-xs">-</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(source.category) && source.category.some(c => !cat1NameSet.has(c)) ? (
+                          source.category.filter(c => !cat1NameSet.has(c)).map((t, i) => (
                             <Badge
                               key={i}
                               variant="secondary"
@@ -410,57 +527,87 @@ export default function SourcesPage() {
 
         {/* 페이지네이션 섹션 */}
         <div className="px-6 py-4 border-t border-gray-100 flex flex-row items-center justify-between gap-4 bg-gray-50/20">
-          <div className="text-sm text-gray-500">
-            총 <span className="font-bold text-gray-700">{total}</span>개의
-            정보원
+          <div className="flex items-center gap-3">
+            {/* <div className="text-sm text-gray-500">
+              총 <span className="font-bold text-gray-700">{total}</span>개의 정보원
+            </div> */}
+            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
+              <SelectTrigger className="w-[120px] h-9 bg-white border-gray-200 rounded-xl shadow-sm text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10개씩 보기</SelectItem>
+                <SelectItem value="100">100개씩 보기</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent className="gap-2">
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => page > 1 && setPage(page - 1)}
-                  className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
-                />
-              </PaginationItem>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (page <= 3) {
-                  pageNum = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = page - 2 + i;
-                }
-                return (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      onClick={() => setPage(pageNum)}
-                      isActive={page === pageNum}
-                      className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${page === pageNum
-                        ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                        }`}
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
-              {totalPages > 5 && page < totalPages - 2 && (
+          <div className="flex items-center gap-3">
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent className="gap-2">
                 <PaginationItem>
-                  <PaginationEllipsis />
+                  <PaginationPrevious
+                    onClick={() => page > 1 && setPage(page - 1)}
+                    className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                  />
                 </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => page < totalPages && setPage(page + 1)}
-                  className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        onClick={() => setPage(pageNum)}
+                        isActive={page === pageNum}
+                        className={`w-10 h-10 rounded-xl font-bold transition-all cursor-pointer ${
+                          page === pageNum
+                            ? "bg-primary-500 text-white border-none shadow-md shadow-primary-200 hover:bg-primary-600"
+                            : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                {totalPages > 5 && page < totalPages - 2 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => page < totalPages && setPage(page + 1)}
+                    className={`rounded-xl border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 transition-all cursor-pointer ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Input
+                type="number"
+                min={1}
+                max={totalPages}
+                key={page}
+                defaultValue={page}
+                className="w-16 h-9 text-center rounded-xl border-gray-200 bg-white shadow-sm text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const v = Number((e.target as HTMLInputElement).value);
+                    if (v >= 1 && v <= totalPages) setPage(v);
+                  }
+                }}
+              />
+              <span>/ {totalPages}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

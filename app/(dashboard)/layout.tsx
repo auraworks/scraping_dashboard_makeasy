@@ -5,6 +5,7 @@ import { Suspense, useState } from "react";
 import { Menu } from "lucide-react";
 import { Drawer, DrawerTrigger, DrawerContent } from "@/components/ui/drawer";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
@@ -22,7 +23,9 @@ export default function DashboardLayout({
           <DrawerTrigger className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <Menu className="w-6 h-6 text-gray-700" />
           </DrawerTrigger>
-          <Image src="/logo_full.png" alt="Logo" width={150} height={40} />
+          <Link href="/dashboard">
+            <Image src="/logo_full.png" alt="Logo" width={150} height={40} />
+          </Link>
         </div>
 
         <DrawerContent side="left" className="w-64 p-0">

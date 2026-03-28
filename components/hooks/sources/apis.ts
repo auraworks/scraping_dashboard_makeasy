@@ -23,8 +23,17 @@ export async function getSources(
     query = query.eq("country", filters.country);
   }
   if (filters?.category && filters.category !== "all") {
-    // Use cs (contains) for JSONB array to check if category exists in the array
-    query = query.contains("category", [filters.category]);
+    query = query.filter("category", "cs", JSON.stringify([filters.category]));
+  } else if (filters?.categoryParent) {
+    const { data: parentCat } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("id", filters.categoryParent)
+      .single();
+
+    if (parentCat) {
+      query = query.filter("category", "cs", JSON.stringify([parentCat.name]));
+    }
   }
   if (filters?.search) {
     query = query.or(`name.ilike.%${filters.search}%,url.ilike.%${filters.search}%`);
