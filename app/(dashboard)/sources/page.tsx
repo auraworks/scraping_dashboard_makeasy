@@ -152,14 +152,11 @@ export default function SourcesPage() {
   const [pageSize, setPageSize] = useState(10);
   const [countryOpen, setCountryOpen] = useState(false);
 
-  // 유형1 목록 (최상위)
-  const { data: cat1List = [] } = useCategories(null);
+  // 유형1 목록 (독립)
+  const { data: cat1List = [] } = useCategories(1);
   const cat1NameSet = new Set(cat1List.map(c => c.name));
-  // 유형2 목록 (선택된 유형1의 하위)
-  const { data: cat2List = [] } = useCategories(
-    selectedCat1 !== "all" ? selectedCat1 : undefined,
-    { enabled: selectedCat1 !== "all" }
-  );
+  // 유형2 목록 (독립)
+  const { data: cat2List = [] } = useCategories(2);
 
   const {
     data: sourcesData,

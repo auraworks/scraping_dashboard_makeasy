@@ -6,15 +6,15 @@ export interface Category {
   name: string;
   description?: string;
   created_at?: string;
-  parent_id?: string | null;
+  category_type?: number;
   sort_order?: number | null;
 }
 
-// Get categories filtered by parent_id.
-// - parentId === null  → 유형1 (top-level, parent_id IS NULL)
-// - parentId === string → 유형2 (children of that parent)
-// - parentId === undefined → all categories (backwards-compatible)
-export async function getCategories(parentId?: string | null): Promise<Category[]> {
+// Get categories filtered by category_type.
+// - type === 1 → 유형1
+// - type === 2 → 유형2
+// - type === undefined → all categories
+export async function getCategories(type?: 1 | 2): Promise<Category[]> {
   const supabase = createClient();
 
   let query = supabase
@@ -22,12 +22,9 @@ export async function getCategories(parentId?: string | null): Promise<Category[
     .select("*")
     .order("sort_order", { ascending: true });
 
-  if (parentId === null) {
-    query = query.is("parent_id", null);
-  } else if (typeof parentId === "string") {
-    query = query.eq("parent_id", parentId);
+  if (type !== undefined) {
+    query = query.eq("category_type", type);
   }
-  // parentId === undefined → no filter, return all (backwards-compatible)
 
   const { data, error } = await query;
 
@@ -42,15 +39,14 @@ export async function getCategories(parentId?: string | null): Promise<Category[
   return data || [];
 }
 
-// Add a new category. parentId = null → 유형1, parentId = string → 유형2
+// Add a new category. type = 1 → 유형1, type = 2 → 유형2
 export async function insertCategory(
   name: string,
-  parentId?: string | null
+  type: 1 | 2 = 1
 ): Promise<Category> {
   const supabase = createClient();
 
-  const payload: { name: string; parent_id?: string | null } = { name };
-  if (parentId !== undefined) payload.parent_id = parentId;
+  const payload: { name: string; category_type: number } = { name, category_type: type };
 
   const { data, error } = await supabase
     .from("categories")

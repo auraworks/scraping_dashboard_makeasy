@@ -218,26 +218,11 @@ const parseContentClassFromDB = (
 
 export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
   const router = useRouter();
-  // 유형1 (최상위 카테고리)
-  const { data: cat1List = [], isLoading: isCat1Loading } = useCategories(null);
-  // 유형2 (선택된 유형1의 하위 카테고리)
+  // 유형1 (독립 카테고리)
+  const { data: cat1List = [], isLoading: isCat1Loading } = useCategories(1);
+  // 유형2 (독립 카테고리)
   const [selectedCat1Id, setSelectedCat1Id] = React.useState<string | null>(null);
-  const { data: cat2List = [] } = useCategories(
-    selectedCat1Id ?? undefined,
-    { enabled: !!selectedCat1Id }
-  );
-
-  // 기존 데이터에서 유형1 복원
-  React.useEffect(() => {
-    if (initialData?.category && cat1List.length > 0 && !selectedCat1Id) {
-      const cat1Names = cat1List.map(c => c.name);
-      const matchedName = initialData.category.find(name => cat1Names.includes(name));
-      if (matchedName) {
-        const cat1 = cat1List.find(c => c.name === matchedName);
-        if (cat1) setSelectedCat1Id(cat1.id);
-      }
-    }
-  }, [initialData?.category, cat1List]);
+  const { data: cat2List = [] } = useCategories(2);
 
   // ========== 독립 State 관리 (form과 분리) ==========
   // types: 카테고리 배열
@@ -601,19 +586,17 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                         {/* 유형2 선택 */}
                         <Select
                           onValueChange={handleCat2Select}
-                          disabled={!selectedCat1Id}
                           value={types.find(t => !cat1List.some(c => c.name === t)) ?? ""}
                         >
                           <SelectTrigger
-                            className="h-16 flex-1 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={!selectedCat1Id}
+                            className="h-16 flex-1 rounded-2xl bg-gray-50 border-none outline-none focus:ring-4 focus:ring-primary-500/30 focus:bg-white transition-all text-lg font-medium px-6"
                           >
-                            <SelectValue placeholder={selectedCat1Id ? "유형2 선택" : "유형1 먼저 선택"} />
+                            <SelectValue placeholder="유형2 선택" />
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
                             {cat2List.length === 0 ? (
                               <SelectItem value="_empty" disabled className="py-3 text-base text-gray-400">
-                                하위 유형이 없습니다
+                                등록된 유형2가 없습니다
                               </SelectItem>
                             ) : (
                               cat2List.map((cat) => (
@@ -625,10 +608,6 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                           </SelectContent>
                         </Select>
                       </div>
-
-                      <p className="text-xs text-gray-400 ml-1 leading-relaxed">
-                        유형1을 먼저 선택한 후, 세부 유형(유형2)을 선택할 수 있습니다.
-                      </p>
                     </div>
                     <FormMessage className="text-xs font-medium" />
                   </FormItem>

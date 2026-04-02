@@ -6,7 +6,7 @@ import type { ApiError } from "@/types/database";
 
 interface AddCategoryInput {
   name: string;
-  parentId?: string | null;
+  type: 1 | 2;
 }
 
 // Add Category Mutation
@@ -19,8 +19,8 @@ export function useAddCategory(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ name, parentId }: AddCategoryInput) =>
-      insertCategory(name, parentId),
+    mutationFn: ({ name, type }: AddCategoryInput) =>
+      insertCategory(name, type),
     onSuccess: () => {
       // Invalidate all category list queries (all parentId variants)
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Trash2, Plus, Loader2, ChevronRight } from "lucide-react";
+import { Trash2, Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/components/hooks/categories/queries";
@@ -61,20 +61,12 @@ function AddCategoryForm({
 
 function CategoryRow({
   category,
-  isSelected,
-  onClick,
   onDelete,
   isDeleting,
-  showArrow,
-  code,
 }: {
   category: Category;
-  isSelected?: boolean;
-  onClick?: () => void;
   onDelete: () => void;
   isDeleting: boolean;
-  showArrow?: boolean;
-  code?: string;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -89,52 +81,30 @@ function CategoryRow({
   };
 
   return (
-    <div
-      onClick={onClick}
-      className={`group flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-        onClick ? "cursor-pointer" : ""
-      } ${
-        isSelected
-          ? "bg-gray-50"
-          : "hover:bg-gray-50"
-      }`}
-    >
+    <div className="group flex items-center justify-between px-4 py-3 rounded-xl transition-all hover:bg-gray-50">
       <div className="flex items-center gap-2 min-w-0">
-        {code && (
-          <span className="shrink-0 text-[11px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded-md">
-            {code}
-          </span>
-        )}
-        <span
-          className={`text-sm font-medium truncate ${
-            isSelected ? "text-gray-900 font-bold" : "text-gray-700"
-          }`}
-        >
+        <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-gray-300" />
+        <span className="text-sm font-medium truncate text-gray-700">
           {category.name}
         </span>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          title={confirmDelete ? "한 번 더 클릭하면 삭제됩니다" : "삭제"}
-          className={`p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
-            confirmDelete
-              ? "bg-red-500 text-white opacity-100"
-              : "text-gray-300 hover:text-red-500 hover:bg-red-50"
-          }`}
-        >
-          {isDeleting ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Trash2 className="w-3.5 h-3.5" />
-          )}
-        </button>
-        {showArrow && (
-          <ChevronRight className="w-4 h-4 text-gray-300" />
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={isDeleting}
+        title={confirmDelete ? "한 번 더 클릭하면 삭제됩니다" : "삭제"}
+        className={`p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
+          confirmDelete
+            ? "bg-red-500 text-white opacity-100"
+            : "text-gray-300 hover:text-red-500 hover:bg-red-50"
+        }`}
+      >
+        {isDeleting ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="w-3.5 h-3.5" />
         )}
-      </div>
+      </button>
     </div>
   );
 }
@@ -146,31 +116,23 @@ function CategoryCard({
   subtitle,
   categories,
   isLoading,
-  selectedId,
-  onSelect,
   onAdd,
   onDelete,
   deletingId,
   addPending,
   addPlaceholder,
   emptyMessage,
-  showArrow,
-  getCode,
 }: {
   title: string;
   subtitle?: string;
   categories: Category[];
   isLoading: boolean;
-  selectedId?: string | null;
-  onSelect?: (cat: Category) => void;
   onAdd: (name: string) => Promise<void>;
   onDelete: (id: string) => void;
   deletingId: string | null;
   addPending: boolean;
   addPlaceholder: string;
   emptyMessage: string;
-  showArrow?: boolean;
-  getCode?: (cat: Category) => string | undefined;
 }) {
   return (
     <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 ring-1 ring-black/5 overflow-hidden flex-1 min-w-0">
@@ -196,12 +158,8 @@ function CategoryCard({
               <CategoryRow
                 key={cat.id}
                 category={cat}
-                isSelected={selectedId === cat.id}
-                onClick={onSelect ? () => onSelect(cat) : undefined}
                 onDelete={() => onDelete(cat.id)}
                 isDeleting={deletingId === cat.id}
-                showArrow={showArrow}
-                code={getCode?.(cat)}
               />
             ))}
           </div>
@@ -224,21 +182,17 @@ function CategoryCard({
 
 export default function CategoriesPage() {
   const toast = useToast();
-  const [selectedCat1, setSelectedCat1] = useState<Category | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: cat1List = [], isLoading: loadingCat1 } = useCategories(null);
-  const { data: cat2List = [], isLoading: loadingCat2 } = useCategories(
-    selectedCat1?.id ?? undefined,
-    { enabled: !!selectedCat1 }
-  );
+  const { data: cat1List = [], isLoading: loadingCat1 } = useCategories(1);
+  const { data: cat2List = [], isLoading: loadingCat2 } = useCategories(2);
 
   const addMutation = useAddCategory();
   const deleteMutation = useDeleteCategory();
 
   const handleAddCat1 = async (name: string) => {
     try {
-      await addMutation.mutateAsync({ name, parentId: null });
+      await addMutation.mutateAsync({ name, type: 1 });
       toast.success("유형1 추가", `"${name}"이(가) 추가되었습니다.`);
     } catch (err) {
       toast.error("추가 실패", (err as Error).message);
@@ -246,9 +200,8 @@ export default function CategoriesPage() {
   };
 
   const handleAddCat2 = async (name: string) => {
-    if (!selectedCat1) return;
     try {
-      await addMutation.mutateAsync({ name, parentId: selectedCat1.id });
+      await addMutation.mutateAsync({ name, type: 2 });
       toast.success("유형2 추가", `"${name}"이(가) 추가되었습니다.`);
     } catch (err) {
       toast.error("추가 실패", (err as Error).message);
@@ -258,7 +211,6 @@ export default function CategoriesPage() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      if (selectedCat1?.id === id) setSelectedCat1(null);
       await deleteMutation.mutateAsync(id);
       toast.success("삭제 완료", "항목이 삭제되었습니다.");
     } catch (err) {
@@ -278,53 +230,31 @@ export default function CategoriesPage() {
       </div>
 
       <div className="flex gap-6 items-stretch">
-        {/* 유형1 카드 */}
         <CategoryCard
           title="유형1"
-          subtitle="최상위 유형"
+          subtitle="독립 유형"
           categories={cat1List}
           isLoading={loadingCat1}
-          selectedId={selectedCat1?.id}
-          onSelect={setSelectedCat1}
           onAdd={handleAddCat1}
           onDelete={handleDelete}
           deletingId={deletingId}
           addPending={addMutation.isPending}
           addPlaceholder="새 유형1 이름 입력"
           emptyMessage="등록된 유형1이 없습니다."
-          showArrow
-          getCode={(cat) => String(cat.sort_order ?? 0)}
         />
 
-        {/* 구분 화살표 */}
-        <div className="flex items-center shrink-0">
-          <ChevronRight className="w-6 h-6 text-gray-300" />
-        </div>
-
-        {/* 유형2 카드 */}
-        {selectedCat1 ? (
-          <CategoryCard
-            title="유형2"
-            subtitle={`"${selectedCat1.name}"의 하위 유형`}
-            categories={cat2List}
-            isLoading={loadingCat2}
-            onAdd={handleAddCat2}
-            onDelete={handleDelete}
-            deletingId={deletingId}
-            addPending={addMutation.isPending}
-            addPlaceholder="새 유형2 이름 입력"
-            emptyMessage="등록된 유형2가 없습니다."
-            getCode={(cat) => `${selectedCat1.sort_order ?? 0}-${cat.sort_order ?? 0}`}
-          />
-        ) : (
-          <div className="flex-1 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-100 ring-1 ring-black/5 min-h-[300px]">
-            <div className="text-center text-gray-400">
-              <ChevronRight className="w-10 h-10 mx-auto mb-3 text-gray-200" />
-              <p className="text-sm font-medium">왼쪽에서 유형1을 선택해주세요</p>
-              <p className="text-xs text-gray-300 mt-1">선택한 유형1의 하위 유형2를 관리합니다</p>
-            </div>
-          </div>
-        )}
+        <CategoryCard
+          title="유형2"
+          subtitle="독립 유형"
+          categories={cat2List}
+          isLoading={loadingCat2}
+          onAdd={handleAddCat2}
+          onDelete={handleDelete}
+          deletingId={deletingId}
+          addPending={addMutation.isPending}
+          addPlaceholder="새 유형2 이름 입력"
+          emptyMessage="등록된 유형2가 없습니다."
+        />
       </div>
     </div>
   );

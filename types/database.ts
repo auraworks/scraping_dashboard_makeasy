@@ -217,7 +217,7 @@ export interface CategoryRow {
   name: string;
   description: string | null;
   created_at: string | null;
-  parent_id: string | null;
+  category_type: number;
   sort_order: number | null;
 }
 

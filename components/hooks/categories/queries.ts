@@ -4,19 +4,19 @@ import { getCategories } from "./apis";
 import type { Category } from "./apis";
 import type { ApiError } from "@/types/database";
 
-// useCategories(undefined) → all categories (backwards-compatible)
-// useCategories(null)      → 유형1 (top-level)
-// useCategories(id)        → 유형2 children of id
+// useCategories()   → all categories
+// useCategories(1)  → 유형1
+// useCategories(2)  → 유형2
 export function useCategories(
-  parentId?: string | null,
+  type?: 1 | 2,
   options?: Omit<
     UseQueryOptions<Category[], ApiError, Category[], ReturnType<typeof categoryKeys.list>>,
     "queryKey" | "queryFn"
   >
 ) {
   return useQuery({
-    queryKey: categoryKeys.list(parentId),
-    queryFn: () => getCategories(parentId),
+    queryKey: categoryKeys.list(type),
+    queryFn: () => getCategories(type),
     ...options,
   });
 }

@@ -68,7 +68,7 @@ export function CategoryForm({ initialData, isEdit = false }: CategoryFormProps)
                 }
             );
         } else {
-            addCategoryMutation.mutate({ name: data.name }, {
+            addCategoryMutation.mutate({ name: data.name, type: 1 }, {
                 onSuccess: () => {
                     toast.success("성공", "새 유형이 등록되었습니다.");
                     router.push("/categories");
