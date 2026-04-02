@@ -181,6 +181,7 @@ export interface Source {
   content_class: Json | null;
   memo: string | null;
   is_live: boolean | null;
+  is_deleted?: boolean | null;
   "1depth": boolean | null;
   created_at: string;
 }

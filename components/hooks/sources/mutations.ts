@@ -4,6 +4,7 @@ import {
   createSource,
   updateSource,
   deleteSource,
+  softDeleteSource,
   bulkUpdateSourceStatus,
 } from "./apis";
 import { sourceKeys } from "./keys";
@@ -46,6 +47,19 @@ export function useUpdateSource(
     },
     onError: (error, variables, onMutateResult, context) => {
       options?.onError?.(error, variables, onMutateResult, context);
+    },
+  });
+}
+
+// Soft Delete Source Mutation
+export function useSoftDeleteSource() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => softDeleteSource(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
+      queryClient.removeQueries({ queryKey: sourceKeys.detail(id) });
     },
   });
 }

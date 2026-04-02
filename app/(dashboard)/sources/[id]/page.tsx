@@ -1,19 +1,39 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { SourceForm } from "@/components/sources/SourceForm";
 import { useSourceDetail } from "@/components/hooks/sources/queries";
-import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useSoftDeleteSource } from "@/components/hooks/sources/mutations";
+import { useToast } from "@/components/hooks/useToast";
+import { Loader2, AlertCircle } from "lucide-react";
 
 export default function SourceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const idStr = params?.id as string;
   const id = idStr ? parseInt(idStr, 10) : null;
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: source, isLoading, error } = useSourceDetail(id as number);
+  const softDeleteMutation = useSoftDeleteSource();
+
+  const handleDelete = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      setTimeout(() => setConfirmDelete(false), 3000);
+      return;
+    }
+    if (!id) return;
+    try {
+      await softDeleteMutation.mutateAsync(id);
+      toast.success("삭제 완료", "정보원이 삭제되었습니다.");
+      router.push("/sources");
+    } catch (err) {
+      toast.error("삭제 실패", (err as Error).message);
+    }
+  };
 
   // Mapping DB data to Form values
   const initialData = source ?? undefined;
@@ -58,12 +78,16 @@ export default function SourceDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 overflow-hidden ring-1 ring-black/5">
-        <SourceForm initialData={initialData} isEdit={true} />
+        <SourceForm
+          initialData={initialData}
+          isEdit={true}
+          onDelete={handleDelete}
+          isDeleting={softDeleteMutation.isPending}
+        />
       </div>
     </div>
   );

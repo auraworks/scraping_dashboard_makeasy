@@ -154,6 +154,8 @@ interface Action {
 }
 
 interface SourceFormProps {
+  onDelete?: () => void;
+  isDeleting?: boolean;
   initialData?: {
     id?: number;
     country?: Country | null;
@@ -216,7 +218,7 @@ const parseContentClassFromDB = (
   };
 };
 
-export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
+export function SourceForm({ initialData, isEdit = false, onDelete, isDeleting = false }: SourceFormProps) {
   const router = useRouter();
   // 유형1 (독립 카테고리)
   const { data: cat1List = [], isLoading: isCat1Loading } = useCategories(1);
@@ -1046,6 +1048,20 @@ export function SourceForm({ initialData, isEdit = false }: SourceFormProps) {
                   "등록"
                 )}
               </Button>
+              {isEdit && onDelete && (
+                <Button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={isDeleting}
+                  className="h-16 w-40 rounded-[1.5rem] bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 font-bold text-lg transition-all active:scale-[0.98]"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    "삭제"
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </form>

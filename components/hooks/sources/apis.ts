@@ -16,7 +16,8 @@ export async function getSources(
 
   let query = supabase
     .from("sources")
-    .select("*", { count: "exact" });
+    .select("*", { count: "exact" })
+    .eq("is_deleted", false);
 
   // Apply filters
   if (filters?.country && filters.country !== "all") {
@@ -141,6 +142,24 @@ export async function bulkUpdateSourceStatus(
     .from("sources")
     .update({ is_live: isLive })
     .in("id", ids);
+
+  if (error) {
+    throw {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    } as ApiError;
+  }
+}
+
+// Soft delete source (set is_deleted = true)
+export async function softDeleteSource(id: number): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ is_deleted: true })
+    .eq("id", id);
 
   if (error) {
     throw {
