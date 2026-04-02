@@ -4,6 +4,7 @@ import {
   createSource,
   updateSource,
   deleteSource,
+  bulkUpdateSourceStatus,
 } from "./apis";
 import { sourceKeys } from "./keys";
 import type { Source, ApiError } from "@/types/database";
@@ -45,6 +46,19 @@ export function useUpdateSource(
     },
     onError: (error, variables, onMutateResult, context) => {
       options?.onError?.(error, variables, onMutateResult, context);
+    },
+  });
+}
+
+// Bulk Update Source Status Mutation
+export function useBulkUpdateSourceStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ ids, isLive }: { ids: number[]; isLive: boolean }) =>
+      bulkUpdateSourceStatus(ids, isLive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sourceKeys.lists() });
     },
   });
 }

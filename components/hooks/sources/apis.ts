@@ -130,6 +130,27 @@ export async function updateSource(
   return data;
 }
 
+// Bulk update is_live status for multiple sources
+export async function bulkUpdateSourceStatus(
+  ids: number[],
+  isLive: boolean
+): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ is_live: isLive })
+    .in("id", ids);
+
+  if (error) {
+    throw {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    } as ApiError;
+  }
+}
+
 // Delete source
 export async function deleteSource(id: number): Promise<void> {
   const supabase = createClient();

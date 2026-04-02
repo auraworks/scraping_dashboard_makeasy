@@ -41,8 +41,10 @@ import {
 } from "@/components/ui/command";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useSourceList } from "@/components/hooks/sources";
+import { useSourceList, useBulkUpdateSourceStatus } from "@/components/hooks/sources";
 import { useCategories } from "@/components/hooks/categories";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/hooks/useToast";
 import type { Country } from "@/types/database";
 
 const COUNTRIES = [
@@ -144,6 +146,7 @@ const COUNTRIES = [
 
 export default function SourcesPage() {
   const router = useRouter();
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedCat1, setSelectedCat1] = useState<string>("all");
@@ -151,6 +154,7 @@ export default function SourcesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // 유형1 목록 (독립)
   const { data: cat1List = [] } = useCategories(1);
@@ -178,6 +182,39 @@ export default function SourcesPage() {
   const sources = sourcesData?.data || [];
   const totalPages = sourcesData?.totalPages || 1;
   const total = sourcesData?.total || 0;
+
+  const bulkUpdateMutation = useBulkUpdateSourceStatus();
+  const isAllSelected = sources.length > 0 && sources.every((s) => selectedIds.has(s.id));
+  const isIndeterminate = sources.some((s) => selectedIds.has(s.id)) && !isAllSelected;
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sources.map((s) => s.id)));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkStatus = async (isLive: boolean) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    try {
+      await bulkUpdateMutation.mutateAsync({ ids, isLive });
+      toast.success("일괄 변경 완료", `${ids.length}개 정보원을 ${isLive ? "수집함" : "수집안함"}으로 변경했습니다.`);
+      setSelectedIds(new Set());
+    } catch (err) {
+      toast.error("변경 실패", (err as Error).message);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(new Date(dateString).getTime() - 9 * 60 * 60 * 1000);
@@ -264,6 +301,30 @@ export default function SourcesPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {/* 일괄 변경 버튼 (체크 시 표시) */}
+              {selectedIds.size > 0 && (
+                <>
+                  <span className="text-sm font-medium text-gray-500">
+                    {selectedIds.size}개 선택됨
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkStatus(true)}
+                    disabled={bulkUpdateMutation.isPending}
+                    className="h-11 px-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-sm"
+                  >
+                    {bulkUpdateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "수집함으로 변경"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkStatus(false)}
+                    disabled={bulkUpdateMutation.isPending}
+                    className="h-11 px-4 bg-gray-400 text-white rounded-xl font-bold hover:bg-gray-500 shadow-sm"
+                  >
+                    {bulkUpdateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "수집안함으로 변경"}
+                  </Button>
+                </>
+              )}
               {/* 국가 검색 Combobox */}
               <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                 <PopoverTrigger asChild>
@@ -377,6 +438,16 @@ export default function SourcesPage() {
           <table className="w-full border-collapse table-fixed min-w-[1000px]">
             <thead>
               <tr className="bg-gray-50/30 border-b border-gray-100">
+                <th className="px-4 py-4 w-[4%]">
+                  <Checkbox
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) (el as HTMLButtonElement & { indeterminate?: boolean }).indeterminate = isIndeterminate;
+                    }}
+                    onCheckedChange={toggleSelectAll}
+                    className="rounded"
+                  />
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-[5%]">
                   ID
                 </th>
@@ -409,7 +480,7 @@ export default function SourcesPage() {
             <tbody className="bg-white divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-16 text-center">
+                  <td colSpan={10} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
                       <span className="text-gray-400 font-medium">
@@ -420,7 +491,7 @@ export default function SourcesPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-16 text-center">
+                  <td colSpan={10} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-red-500 font-medium">
                         데이터를 불러오는 중 오류가 발생했습니다.
@@ -430,7 +501,7 @@ export default function SourcesPage() {
                 </tr>
               ) : sources.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-16 text-center">
+                  <td colSpan={10} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-gray-400 font-medium">
                         등록된 정보원이 없습니다.
@@ -445,6 +516,16 @@ export default function SourcesPage() {
                     onClick={() => router.push(`/sources/${source.id}`)}
                     className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
                   >
+                    <td
+                      className="px-4 py-5 whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={selectedIds.has(source.id)}
+                        onCheckedChange={() => toggleSelect(source.id)}
+                        className="rounded"
+                      />
+                    </td>
                     <td className="px-6 py-5 whitespace-nowrap text-sm font-mono text-gray-400 truncate">
                       #{source.id}
                     </td>
