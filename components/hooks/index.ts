@@ -60,11 +60,13 @@ export {
   createSource,
   updateSource,
   deleteSource,
+  bulkUpdateSourceStatus,
   useSourceList,
   useSourceDetail,
   useCreateSource,
   useUpdateSource,
   useDeleteSource,
+  useBulkUpdateSourceStatus,
   type SourceFilters,
 } from "./sources";
 
