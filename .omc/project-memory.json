@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1775087493993,
+  "lastScanned": 1775189650050,
   "projectRoot": "D:\\000.FrontEnd\\206.universial_crawling_data_front",
   "techStack": {
     "languages": [
@@ -80,7 +80,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1775087493463,
+      "lastAccessed": 1775189649960,
       "keyFiles": [
         "favicon.ico",
         "globals.css",
@@ -93,7 +93,7 @@
       "path": "components",
       "purpose": "UI components",
       "fileCount": 12,
-      "lastAccessed": 1775087493483,
+      "lastAccessed": 1775189649962,
       "keyFiles": [
         "auth-button.tsx",
         "deploy-button.tsx",
@@ -106,14 +106,14 @@
       "path": "hooks",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1775087493484,
+      "lastAccessed": 1775189649981,
       "keyFiles": []
     },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
       "fileCount": 1,
-      "lastAccessed": 1775087493485,
+      "lastAccessed": 1775189649982,
       "keyFiles": [
         "utils.ts"
       ]
@@ -122,7 +122,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 3,
-      "lastAccessed": 1775087493486,
+      "lastAccessed": 1775189649983,
       "keyFiles": [
         "admin.jpg",
         "logo.png",
@@ -133,7 +133,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1775087493486,
+      "lastAccessed": 1775189649984,
       "keyFiles": [
         "import-authors.js"
       ]
@@ -142,7 +142,7 @@
       "path": "types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1775087493486,
+      "lastAccessed": 1775189649985,
       "keyFiles": [
         "database.ts"
       ]
@@ -151,14 +151,14 @@
       "path": "app\\api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1775087493541,
+      "lastAccessed": 1775189649986,
       "keyFiles": []
     },
     "components\\data": {
       "path": "components\\data",
       "purpose": "Data files",
       "fileCount": 1,
-      "lastAccessed": 1775087493683,
+      "lastAccessed": 1775189649987,
       "keyFiles": [
         "DataForm.tsx"
       ]
@@ -167,105 +167,15 @@
       "path": "hooks\\data",
       "purpose": "Data files",
       "fileCount": 0,
-      "lastAccessed": 1775087493803,
+      "lastAccessed": 1775189649989,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
-      "path": "app\\(dashboard)\\categories\\page.tsx",
-      "accessCount": 17,
-      "lastAccessed": 1775088920901,
-      "type": "file"
-    },
-    {
-      "path": "components\\sources\\SourceForm.tsx",
-      "accessCount": 14,
-      "lastAccessed": 1775129130952,
-      "type": "file"
-    },
-    {
-      "path": "app\\(dashboard)\\sources\\page.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1775089688825,
-      "type": "file"
-    },
-    {
-      "path": "app\\(dashboard)\\sources\\[id]\\page.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1775129154743,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\sources\\mutations.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775126127913,
-      "type": "file"
-    },
-    {
-      "path": "types\\database.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775126267700,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\categories\\apis.ts",
+      "path": "app\\(dashboard)\\data\\page.tsx",
       "accessCount": 4,
-      "lastAccessed": 1775088543708,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\categories\\mutations.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775088553799,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\sources\\apis.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775126112564,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\categories\\keys.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775088537266,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\categories\\queries.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775088547377,
-      "type": "file"
-    },
-    {
-      "path": "components\\categories\\CategoryForm.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1775088747850,
-      "type": "file"
-    },
-    {
-      "path": "",
-      "accessCount": 3,
-      "lastAccessed": 1775089591854,
-      "type": "directory"
-    },
-    {
-      "path": "app\\(dashboard)\\categories\\[id]\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1775088354693,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\categories\\index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775088443945,
-      "type": "file"
-    },
-    {
-      "path": "components\\hooks\\sources\\index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775089635928,
+      "lastAccessed": 1775189772559,
       "type": "file"
     }
   ],

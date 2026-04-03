@@ -351,12 +351,12 @@ export default function DataPage() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="text-sm text-gray-600 font-medium">
+                    <td className="px-6 py-5 overflow-hidden whitespace-nowrap">
+                      <div className="text-sm text-gray-600 font-medium truncate">
                         {item.sources?.name ?? "-"}
                       </div>
                     </td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-5 overflow-hidden whitespace-nowrap">
                       <div className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors truncate">
                         {item.title ?? "-"}
                       </div>

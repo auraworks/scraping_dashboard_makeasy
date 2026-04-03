@@ -1,1 +1,10 @@
-{}
+{
+    "env":  {
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL":  "MiniMax-M2.7-highspeed",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL":  "MiniMax-M2.7-highspeed",
+                "API_TIMEOUT_MS":  "3000000",
+                "ANTHROPIC_AUTH_TOKEN":  "sk-cp-m_vbz_zjrrLXjo7RGtHtnz58UxBqgLnP_sZRzMZV-i3XbCIkX_VSRuGJ7XwzrYnrNALClaDD5qlIpraQloPWVcrPu5l0ZnSZkBb4rubNOazCgYvnw7eD4wM",
+                "ANTHROPIC_DEFAULT_OPUS_MODEL":  "MiniMax-M2.7-highspeed",
+                "ANTHROPIC_BASE_URL":  "https://api.minimax.io/anthropic"
+            }
+}
